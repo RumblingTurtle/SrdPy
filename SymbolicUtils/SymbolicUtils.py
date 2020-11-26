@@ -1,6 +1,6 @@
 import numpy as np
 from casadi import *
-from SRD import SymbolicEncoding
+from SrdPy import SymbolicEncoding
 
 
 def deriveControlMap(symbolicEngine:SymbolicEncoding):
