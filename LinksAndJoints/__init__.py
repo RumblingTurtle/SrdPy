@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import matlib
-from SRD import SrdMath
+from .. import SrdMath
 import numpy as np
 
 class SrdLink:
