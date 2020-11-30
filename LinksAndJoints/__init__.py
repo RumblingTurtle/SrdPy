@@ -114,14 +114,14 @@ class SrdJoint:
 
     def forwardKinematicsJointUpdate(self):
         self.childLink.absoluteBase = self.parentLink.absoluteFollower[self.parentFollowerNumber]
-        self.childLink.absoluteOrientation = self.parentLink.absoluteOrientation * self.childLink.relativeOrientation
+        self.childLink.absoluteOrientation = self.parentLink.absoluteOrientation.dot(self.childLink.relativeOrientation)
 
         rBaseToFollower = self.childLink.relativeFollower - np.matlib.repmat(self.childLink.relativeBase,self.childLink.relativeFollower.shape[0],1)
         rBaseToCoM = self.childLink.relativeCoM - self.childLink.relativeBase
 
         self.childLink.absoluteFollower = np.matlib.repmat(self.childLink.absoluteBase,self.childLink.relativeFollower.shape[0], 1) + self.childLink.absoluteOrientation.dot(rBaseToFollower.T).T
 
-        self.childLink.absoluteCoM = self.childLink.absoluteBase + self.childLink.absoluteOrientation * rBaseToCoM
+        self.childLink.absoluteCoM = self.childLink.absoluteBase + self.childLink.absoluteOrientation.dot(rBaseToCoM)
 
 class SrdJointFixed(SrdJoint):
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
@@ -134,7 +134,7 @@ class SrdJointFixed(SrdJoint):
         return 0
 
     def update(self, inputVector):
-        self.relativeOrientation = self.defaultJointOrientation
+        self.childLink.relativeOrientation = self.defaultJointOrientation
         self.forwardKinematicsJointUpdate()
 
 class SrdJointPivotX(SrdJoint):
@@ -150,7 +150,7 @@ class SrdJointPivotX(SrdJoint):
     def update(self,inputVector):
         q = inputVector[self.usedGeneralizedCoordinates]
 
-        self.relativeOrientation = self.defaultJointOrientation * SrdMath.rotationMatrix3Dx(q)
+        self.childLink.relativeOrientation = self.defaultJointOrientation.dot(SrdMath.rotationMatrix3Dx(q))
 
         self.forwardKinematicsJointUpdate()
 
@@ -159,14 +159,14 @@ class SrdJointPivotX(SrdJoint):
 
         Child_T = self.childLink.absoluteOrientation
 
-        torque_child  = Child_T * [u, 0, 0]
-        torque_parent = Child_T * [-u, 0, 0]
+        torque_child  = Child_T.dot([u, 0, 0])
+        torque_parent = Child_T.dot([-u, 0, 0])
 
         child_Jw = self.childLink.jacobianAngularVelocity
         parent_Jw = self.parentLink.jacobianAngularVelocity
 
-        gen_force_child = child_Jw.T  * torque_child
-        gen_force_parent = parent_Jw.T * torque_parent
+        gen_force_child = child_Jw.dot(torque_child)
+        gen_force_parent = parent_Jw.dot(torque_parent)
 
         return gen_force_child + gen_force_parent
 
@@ -183,7 +183,7 @@ class SrdJointPivotY(SrdJoint):
     def update(self, inputVector):
         q = inputVector[self.usedGeneralizedCoordinates]
 
-        self.relativeOrientation = self.defaultJointOrientation * SrdMath.rotationMatrix3Dy(q)
+        self.childLink.relativeOrientation = self.defaultJointOrientation.dot(SrdMath.rotationMatrix3Dy(q))
 
         self.forwardKinematicsJointUpdate()
 
@@ -192,14 +192,14 @@ class SrdJointPivotY(SrdJoint):
 
         Child_T = self.childLink.absoluteOrientation
 
-        torque_child  = Child_T * [0, u, 0]
-        torque_parent = Child_T * [0, -u, 0]
+        torque_child  = Child_T.dot([0, u, 0])
+        torque_parent = Child_T.dot([0, -u, 0])
 
         child_Jw = self.childLink.jacobianAngularVelocity
         parent_Jw = self.parentLink.jacobianAngularVelocity
 
-        gen_force_child = child_Jw.T  * torque_child
-        gen_force_parent = parent_Jw.T * torque_parent
+        gen_force_child = child_Jw.dot(torque_child)
+        gen_force_parent = parent_Jw.dot(torque_parent)
 
         return gen_force_child + gen_force_parent
 
@@ -216,7 +216,7 @@ class SrdJointPivotZ(SrdJoint):
     def update(self, inputVector):
         q = inputVector[self.usedGeneralizedCoordinates]
 
-        self.relativeOrientation = self.defaultJointOrientation * SrdMath.rotationMatrix3Dz(q)
+        self.childLink.relativeOrientation = self.defaultJointOrientation.dot(SrdMath.rotationMatrix3Dz(q))
 
         self.forwardKinematicsJointUpdate()
 
@@ -225,13 +225,13 @@ class SrdJointPivotZ(SrdJoint):
 
         Child_T = self.childLink.absoluteOrientation
 
-        torque_child  = Child_T * [0, 0, u]
-        torque_parent = Child_T * [0, 0, -u]
+        torque_child  = Child_T.dot([0, 0, u])
+        torque_parent = Child_T.dot([0, 0, -u])
 
         child_Jw = self.childLink.jacobianAngularVelocity
         parent_Jw = self.parentLink.jacobianAngularVelocity
 
-        gen_force_child = child_Jw.T  * torque_child
-        gen_force_parent = parent_Jw.T * torque_parent
+        gen_force_child = child_Jw.dot(torque_child)
+        gen_force_parent = parent_Jw.dot(torque_parent)
 
         return gen_force_child + gen_force_parent

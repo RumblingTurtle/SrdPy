@@ -3,6 +3,8 @@ import subprocess
 import os
 from meshcat.servers.zmqserver import match_web_url, match_zmq_url
 import meshcat
+import meshcat.geometry as g
+import numpy as np
 
 class SrdVisualizer:
     def __init__(self):
@@ -28,13 +30,28 @@ class SrdVisualizer:
                 print(outs.decode("utf-8"))
                 print(errs.decode("utf-8"))
                 raise RuntimeError(
-                    "the meshcat server process exited prematurely with exit code " + str(server_proc.poll()))
+                    "the meshcat server process exited prematurely with exit code " + str(self.server_proc.poll()))
         zmq_url = match_zmq_url(line)
         web_url = match_web_url(self.server_proc.stdout.readline().strip().decode("utf-8"))
-        self.meshcatVis = meshcat.Visualizer(zmq_url = zmq_url)
+        self.meshcatVis = meshcat.Visualizer(zmq_url=zmq_url)
+        self.meshcatVis.open()
 
     def show(self, chain):
-        self.meshcatVis.open()
+        vertices = np.array([])
+        for link in chain.linkArray[1:]:
+            print(link.absoluteBase)
+            print(link.absoluteFollower)
+            if vertices.shape[0] == 0:
+                vertices = np.array([link.absoluteBase])
+            else:
+                vertices=np.vstack((vertices,[link.absoluteBase]))
+            vertices=np.vstack((vertices,link.absoluteFollower))
+
+        line_vertices = np.array(vertices).astype(np.float32)
+
+        self.meshcatVis['lines_segments'].set_object(g.LineSegments(g.PointsGeometry(line_vertices)))
+
+
 
     def kill(self):
         self.server_proc.terminate()
