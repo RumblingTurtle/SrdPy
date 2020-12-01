@@ -2,7 +2,7 @@ import numpy as np
 from meshcat.jupyter import JupyterVisualizer
 import meshcat.geometry as g
 import meshcat.transformations as tf
-from SrdMath import rotation_transform
+from SrdPy.SrdMath import rotation_transform
 
 class SrdVisualizer:
     def __init__(self):
