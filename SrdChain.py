@@ -18,6 +18,12 @@ class SrdChain:
 
         self.dof = len(generalizedCoordinates)
         self.controlDof = len(controlInputs)
+    def get_vertex_coords(self):
+        vertices = np.array([[0, 0, 0]])
+        for i, link in enumerate(self.linkArray):
+            if link.name != "Ground":
+                vertices = np.vstack((vertices, link.absoluteBase.tolist()))
+        return vertices
 
     def update(self,q):
         for joint in self.jointArray:

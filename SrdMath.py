@@ -173,7 +173,7 @@ def rotation_transform(v1,v2):
   h = (1 - c)/(1 - c**2)
 
   vx, vy, vz = v
-  return [[c + h*vx**2, h*vx*vy - vz, h*vx*vz + vy,0],
+  return np.array([[c + h*vx**2, h*vx*vy - vz, h*vx*vz + vy,0],
         [h*vx*vy+vz, c+h*vy**2, h*vy*vz-vx,0],
         [h*vx*vz - vy, h*vy*vz + vx, c+h*vz**2,0],
-        [0,0,0,1]]
+        [0,0,0,1]])

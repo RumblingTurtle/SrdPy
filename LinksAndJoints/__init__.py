@@ -75,7 +75,7 @@ class GroundLink(SrdLink):
         self.relativeFollower= np.array([[0,0,0]])
         self.relativeCoM = np.array([0,0,0])
         self.relativeOrientation = np.eye(3)
-
+        self.absoluteBase = np.array([0,0,0])
         self.absoluteFollower = np.array([[0,0,0]])
 
         self.absoluteOrientation = np.eye(3)
