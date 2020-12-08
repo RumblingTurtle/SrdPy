@@ -58,7 +58,7 @@ class SrdLink:
         self.jacobianCenterOfMass = []
         self.jacobianAngularVelocity = []
 
-        self.absoluteOrientation_derivative = []
+        self.absoluteOrientationDerivative = []
         self.angularVelocity = []
         ###################
 

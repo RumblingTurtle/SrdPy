@@ -3,4 +3,4 @@ from SrdPy import SymbolicEngine
 
 
 def deriveControlMap(symbolicEngine:SymbolicEngine):
-    return MX.eye(symbolicEngine.dof)
+    return SX.eye(symbolicEngine.dof)

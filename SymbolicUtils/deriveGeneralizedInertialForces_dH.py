@@ -7,8 +7,8 @@ def deriveGeneralizedInertialForces_dH(symbolicEngine:SymbolicEngine, jointSpace
     H = jointSpaceInertiaMatrix
     q = symbolicEngine.q
     v = symbolicEngine.v
-
-    dH = MX.jacobian(MX.reshape(H, len(v) * len(v), 1), q) * v
-    dH = MX.reshape(dH, len(v), len(v))
-    kineticEnergy = 0.5 * v.T * H * v
-    return MX.reshape(dH * v, len(v), 1) - reshape(jacobian(kineticEnergy, q), len(v), 1)
+    print( v.shape)
+    dH = jacobian(reshape(H, v.shape[0]**2, 1), q) @ v
+    dH = reshape(dH, v.shape[0], v.shape[0])
+    kineticEnergy = 0.5 * v.T @ H @ v
+    return reshape(dH @ v, v.shape[0], 1) - reshape(jacobian(kineticEnergy, q), v.shape[0], 1),dH

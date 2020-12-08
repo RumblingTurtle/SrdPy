@@ -10,11 +10,11 @@ from SrdPy import SymbolicEngine
 # g = sum(J'*m*g )
 
 def deriveGeneralizedGravitationalForces(symbolicEngine:SymbolicEngine, gravitationalConstant=np.array([0, 0, -9.8])):
-    G = MX.zeros(symbolicEngine.dof, 1)
+    G = SX.zeros(symbolicEngine.dof, 1)
 
     for link in symbolicEngine.linkArray:
-        G = G + link.Jacobian_CenterOfMass.T * link.Mass * gravitationalConstant
+        G = G +link.mass * link.jacobianCenterOfMass.T @ gravitationalConstant
 
-    G = MX.simplify(G)
+    G = simplify(G)
 
     return G

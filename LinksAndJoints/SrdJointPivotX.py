@@ -14,7 +14,7 @@ class SrdJointPivotX(SrdJoint):
     def update(self,inputVector):
         q = inputVector[self.usedGeneralizedCoordinates]
 
-        self.childLink.relativeOrientation = self.defaultJointOrientation.dot(SrdMath.rotationMatrix3Dx(q))
+        self.childLink.relativeOrientation = self.defaultJointOrientation @ SrdMath.rotationMatrix3Dx(q)
 
         self.forwardKinematicsJointUpdate()
 
@@ -33,3 +33,5 @@ class SrdJointPivotX(SrdJoint):
         gen_force_parent = parent_Jw.dot(torque_parent)
 
         return gen_force_child + gen_force_parent
+
+
