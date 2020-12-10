@@ -18,8 +18,6 @@ class SrdSpline:
 
         t = SX.sym("t")
 
-        segmentCount = len(times)
-
         for segment in segments:
             pointCount = len(segment[0])
             defaultMatrixLine = SX.zeros(pointCount)
@@ -44,7 +42,6 @@ class SrdSpline:
 
                 matrix[j] =  np.array(evalf(matrixLine)).reshape((pointCount))
 
-            print(matrix)
             self.coefficients.append(np.linalg.solve(matrix,values))
         self.coefficients.append(self.coefficients[-1])
 

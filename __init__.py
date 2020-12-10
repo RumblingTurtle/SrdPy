@@ -1,1 +1,2 @@
 from SrdPy.SrdChain import SrdChain
+from SrdPy.SplineConstructor import SplineConstructor
