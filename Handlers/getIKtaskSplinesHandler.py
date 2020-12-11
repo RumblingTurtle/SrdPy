@@ -24,6 +24,7 @@ def getIKtaskSplinesHandler(nodeTimes,zeroOrderDerivativeNodes,firstOrderDerivat
 
     handler.timeStart = nodeTimes[0]
     handler.timeExpiration = nodeTimes[-1]
+    return handler
 
 
 

@@ -17,7 +17,7 @@ class SrdSpline:
             return
 
         t = SX.sym("t")
-
+        coefficients = []
         for segment in segments:
             pointCount = len(segment[0])
             defaultMatrixLine = SX.zeros(pointCount)
@@ -38,12 +38,13 @@ class SrdSpline:
                 for i in range(derivativeOrder):
                     matrixLine = jacobian(matrixLine,t)
 
-                matrixLine = substitute(matrixLine,t,time)
+                substituted_line = substitute(matrixLine,t,time)
 
-                matrix[j] =  np.array(evalf(matrixLine)).reshape((pointCount))
+                matrix[j] =  np.array(evalf(substituted_line)).reshape((pointCount))
 
             self.coefficients.append(np.linalg.solve(matrix,values))
         self.coefficients.append(self.coefficients[-1])
+
 
     def evaluate(self,time, order):
         if time > max(self.times):
@@ -65,15 +66,15 @@ class SrdSpline:
 
     def derivativeSpline(self,order):
         derivativeSpline = SrdSpline()
-        derivativeSpline.coefficients = self.coefficients
-        derivativeSpline.times = self.times
+        derivativeSpline.times = np.copy(self.times)
         derivativeSpline.outOfBoundsBehaviour = self.outOfBoundsBehaviour
 
-        segmentCount = len(self.times)-1
+        segmentCount = len(self.coefficients)
 
         for i in range(segmentCount):
             C = np.polyder(self.coefficients[i],order)
-            derivativeSpline.coefficients[i] = C
+            derivativeSpline.coefficients.append(C)
+
         return derivativeSpline
 
     def outOfBoundsFix(self, time):

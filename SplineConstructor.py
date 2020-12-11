@@ -93,30 +93,35 @@ class SplineConstructor():
 
             segments.append(segment)
 
-        nodeCount = len(nodes)
-        timesForCurrentSpline = [0]*nodeCount
-        for j in range(nodeCount):
-            timesForCurrentSpline[j] = nodes[j].time
+            nodeCount = len(nodes)
+            timesForCurrentSpline = [0]*nodeCount
+            for j in range(nodeCount):
+                timesForCurrentSpline[j] = nodes[j].time
 
-        self.splineArray[0].append(SrdSpline(segments,timesForCurrentSpline))
-        self.splineArray[1].append(self.splineArray[0][-1].derivativeSpline(1))
-        self.splineArray[2].append(self.splineArray[0][-1].derivativeSpline(2))
+            self.splineArray[0].append(SrdSpline(segments,timesForCurrentSpline))
+            self.splineArray[1].append(self.splineArray[0][-1].derivativeSpline(1))
+            self.splineArray[2].append(self.splineArray[0][-1].derivativeSpline(2))
+        for spline in self.splineArray[1]:
+            print(spline.coefficients[0])
+        return self.splineArray
 
-        def evaluateQ(self, t):
-            q = np.zeros(self.numberOfSplines, 1);
-            for i in range(self.numberOfSplines):
-                q[i] = self.splineArray[0][i].evaluate(t)
+    def evaluateQ(self, t):
+        q = np.zeros((self.numberOfSplines, 1))
+        for i in range(self.numberOfSplines):
+            q[i] = self.splineArray[0][i].evaluate(t,0)
+        return q
 
-        def evaluateV(self, t):
-            v = np.zeros(self.numberOfSplines, 1)
-            for i in range(self.numberOfSplines):
-                v[i] = self.splineArray[1][i].evaluate(t)
+    def evaluateV(self, t):
+        v = np.zeros((self.numberOfSplines, 1))
+        for i in range(self.numberOfSplines):
+            v[i] = self.splineArray[1][i].evaluate(t,0)
+        return v
 
-        def evaluateA(self, t):
-            v = np.zeros(self.numberOfSplines, 1)
-            for i in range(self.numberOfSplines):
-                v[i] = self.splineArray[2][i].evaluate(t)
+    def evaluateA(self, t):
+        a = np.zeros((self.numberOfSplines, 1))
+        for i in range(self.numberOfSplines):
+            a[i] = self.splineArray[2][i].evaluate(t,0)
+        return a
 
-
-        def evaluateAll(self, t):
-            return evaluateQ(t),evaluateV(t),evaluateA(t)
+    def evaluateAll(self, t):
+        return evaluateQ(t),evaluateV(t),evaluateA(t)
