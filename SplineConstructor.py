@@ -97,10 +97,11 @@ class SplineConstructor():
             timesForCurrentSpline = [0]*nodeCount
             for j in range(nodeCount):
                 timesForCurrentSpline[j] = nodes[j].time
+            new_spline = SrdSpline(segments,timesForCurrentSpline)
+            self.splineArray[0].append(new_spline)
+            self.splineArray[1].append(new_spline.derivativeSpline(1))
+            self.splineArray[2].append(new_spline.derivativeSpline(2))
 
-            self.splineArray[0].append(SrdSpline(segments,timesForCurrentSpline))
-            self.splineArray[1].append(self.splineArray[0][-1].derivativeSpline(1))
-            self.splineArray[2].append(self.splineArray[0][-1].derivativeSpline(2))
         for spline in self.splineArray[1]:
             print(spline.coefficients[0])
         return self.splineArray
