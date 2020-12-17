@@ -8,23 +8,23 @@ class IKModelHandler(Handler):
         super(IKModelHandler,self).__init__()
         so_path = description["path"] + "/" + description["casadi_cCodeFilename"] + ".so"
 
-        self.getTaskHandler = external(description["functionName_Task"], so_path)
-        self.getJacobianHandler = external(description["functionName_TaskJacobian"], so_path)
-        self.getJacobianDerivativeHandler = external(description["functionName_TaskJacobianDerivative"], so_path)
+        self.taskHandler = external(description["functionName_Task"], so_path)
+        self.jacobianHandler = external(description["functionName_TaskJacobian"], so_path)
+        self.jacobianDerivativeHandler = external(description["functionName_TaskJacobianDerivative"], so_path)
         self.dofRobot = dofRobot
         self.dofTask = dofTask
 
 
-    def getTask(self, *args):
-        return self.getTaskHandler(*args)
+    def getTask(self, q):
+        return self.taskHandler(q)
 
 
-    def getJacobian(self, *args):
-        return self.getJacobianHandler(*args)
+    def getJacobian(self, q):
+        return self.jacobianHandler(q)
 
 
-    def getJacobianDerivative(self, *args):
-        return self.getJacobianDerivativeHandler(*args)
+    def getJacobianDerivative(self, q,v):
+        return self.jacobianDerivativeHandler(q,v)
 
 def getIKModelHandler(description,dofRobot,dofTask):
     return IKModelHandler(description,dofRobot,dofTask)
