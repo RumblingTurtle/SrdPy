@@ -1,4 +1,4 @@
-from numpy import np
+import numpy as np
 
 class ComputedTorqueController():
     def __init__(self, stateHandler, controlInputHandler, gcModelHandler, simulationHandler, IKHandler,kP,kD):

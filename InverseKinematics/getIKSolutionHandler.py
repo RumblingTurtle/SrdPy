@@ -8,6 +8,9 @@ class IKSolutionHandler():
         self.timeTable = timeTable
         self.IKTable = IKTable
         self.method = method
+        self.dofRobot = self.IKModelHandler.dofRobot
+        self.timeStart = max(self.IKModelHandler.timeStart,self.IKTaskHandler.timeStart)
+        self.timeExpiration = min(self.IKModelHandler.timeExpiration,self.IKTaskHandler.timeExpiration)
 
     def getPosition(self,t):
         a = interpolate.interp1d(x=self.timeTable,y=self.IKTable[:,0],kind=self.method)(t)

@@ -1,2 +1,3 @@
 from SrdPy.Controllers.getComputedTorqueController import getComputedTorqueController
-from SrdPy.Controllers.getIKVanillaDesiredTrajectoryHandler import getIKVanillaDesiredTrajectoryHandler
+from SrdPy.Controllers.getIDVanillaDesiredTrajectoryHandler import getIDVanillaDesiredTrajectoryHandler
+from SrdPy.Controllers.getLQRControllerHandler import getLQRControllerHandler

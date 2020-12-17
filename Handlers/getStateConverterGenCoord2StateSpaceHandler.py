@@ -1,4 +1,4 @@
-import numpy as np
+from casadi import *
 class StateConverterGenCoord2StateSpaceHandler():
     def __init__(self,handlerState):
         self.dofRobotStateSpace = 2*handlerState.dofRobot
@@ -6,9 +6,12 @@ class StateConverterGenCoord2StateSpaceHandler():
         self.x = None
         self.dx = None
 
+    def getX_dx(self,*args):
+        return self.x,self.dx
+
     def update(self):
-        self.x = np.vstack((self.handlerState.q,self.handlerState.v))
-        self.dx = np.vstack((self.handlerState.v,self.handlerState.a))
+        self.x = vertcat(self.handlerState.q,self.handlerState.v)
+        self.dx = vertcat(self.handlerState.v,self.handlerState.a)
 
 def getStateConverterGenCoord2StateSpaceHandler(handlerState):
     return StateConverterGenCoord2StateSpaceHandler(handlerState)

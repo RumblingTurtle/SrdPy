@@ -1,9 +1,9 @@
 import numpy as np
 class ControllerHandler():
     def __init__(self,controlInputHandler,gcModelHandler,simulationHandler):
-        self.controlInputHandler
-        self.gcModelHandler
-        self.simulationHandler
+        self.controlInputHandler = controlInputHandler
+        self.gcModelHandler = gcModelHandler
+        self.simulationHandler = simulationHandler
         self.u = []
 
     def update(self):
@@ -18,5 +18,5 @@ class ControllerHandler():
         self.u = np.linalg.pinv(T)@(H@a+c)
 
 
-def getIKVanillaDesiredTrajectoryHandler(controlInputHandler,gcModelHandler,simulationHandler):
+def getIDVanillaDesiredTrajectoryHandler(controlInputHandler,gcModelHandler,simulationHandler):
     return ControllerHandler(controlInputHandler,gcModelHandler,simulationHandler)

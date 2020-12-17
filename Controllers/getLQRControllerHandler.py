@@ -1,4 +1,5 @@
 from control import lqr
+from casadi import *
 import numpy as np
 
 class LQRControllerHandler():
@@ -21,9 +22,9 @@ class LQRControllerHandler():
         A = self.linearizedModelHandler.getA()
         B = self.linearizedModelHandler.getB()
 
-        K = lqr(A, B, Q, R)
+        K, S, CLP = lqr(A, B.T, self.Q, self.R)
 
-        e = np.reshape((self.stateSpaceHandler.x - x), [], 1)
+        e = (self.stateSpaceHandler.x - x)
 
         u_FB = -K @ e
 
@@ -33,5 +34,5 @@ class LQRControllerHandler():
 
 def getLQRControllerHandler(stateSpaceHandler,controlInputStateSpaceHandler,
                  linearizedModelHandler,simulationHandler,IKHandler,Q,R):
-    LQRControllerHandler(stateSpaceHandler,controlInputStateSpaceHandler,
+    return LQRControllerHandler(stateSpaceHandler,controlInputStateSpaceHandler,
                  linearizedModelHandler,simulationHandler,IKHandler,Q,R)

@@ -9,7 +9,10 @@ class DesiredStateHandler():
 
     def update(self):
         t = self.simulationHandler.currentTime
-        self.q,self.v,self.a = self.controlInputHandler.getPositionVelocityAcceleration()
+        self.q,self.v,self.a = self.controlInputHandler.getPositionVelocityAcceleration(t)
+
+    def getPositionVelocityAcceleration(self,t):
+        return self.q,self.v,self.a
 
 
 def getDesiredStateHandler(controlInputHandler, simulationHandler):

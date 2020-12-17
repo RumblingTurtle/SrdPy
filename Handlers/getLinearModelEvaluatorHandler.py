@@ -1,3 +1,4 @@
+from casadi import *
 class LinearModelEvaluatorHandler():
     def __init__(self,gcModel,linearizedModel,stateHandler,controllerHandler,dofRobotStateSpace,dofControl,toEvaluateC):
         self.gcModel = gcModel
@@ -18,8 +19,9 @@ class LinearModelEvaluatorHandler():
 
     def update(self):
         q,v,a= self.stateHandler.getPositionVelocityAcceleration()
-
-        u = self.controllerHandler.u
+        q = DM(q)
+        v = DM(v)
+        u = DM(self.controllerHandler.u)
 
         iH = self.gcModel.getJointSpaceInertiaMatrixInverse(q)
 
@@ -46,6 +48,6 @@ def getLinearModelEvaluatorHandler(generalizedCoordinatesModel,linearizedModel,s
     dofRobotStateSpace = 2*generalizedCoordinatesModel.dofConfigurationSpaceRobot
     dofControl = generalizedCoordinatesModel.dofControl
 
-    handler = LinearModelEvaluatorHandler(linearizedModel,stateHandler,controllerHandler,
+    handler = LinearModelEvaluatorHandler(generalizedCoordinatesModel,linearizedModel,stateHandler,controllerHandler,
                                           dofRobotStateSpace,dofControl,toEvaluateC)
     return handler

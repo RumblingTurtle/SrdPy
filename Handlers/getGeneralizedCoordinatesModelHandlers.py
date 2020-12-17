@@ -1,16 +1,35 @@
 from casadi import *
-from collections import namedtuple
+import numpy as np
 
-def getGeneralizedCoordinatesModelHandlers(description):
-    so_path = description["path"]+"/"+description["casadi_cCodeFilename"]+".so"
-    fields = ["getJointSpaceInertiaMatrix","getBiasVector","getControlMap","dofConfigurationSpaceRobot","dofControl"]
+class GeneralizedCoordinatesModelHandler():
+    def __init__(self,description,usePinv):
+        so_path = description["path"] + "/" + description["casadi_cCodeFilename"] + ".so"
 
-    handler = namedtuple("GeneralizedCoordinatesModelHandler",fields)
+        self.dofConfigurationSpaceRobot = description["dofConfigurationSpaceRobot"]
+        self.dofControl = description["dofControl"]
+        self.getJointSpaceInertiaMatrixHandler = external(description["functionName_H"], so_path)
+        self.getBiasVectorHandler = external(description["functionName_c"], so_path)
+        self.getControlMapHandler = external(description["functionName_T"], so_path)
+        self.usePinv = usePinv
 
-    dofConfigurationSpaceRobot = description["dofConfigurationSpaceRobot"]
-    dofControl = description["dofControl"]
-    getJointSpaceInertiaMatrix = external(description["functionName_H"],so_path)
-    getBiasVector = external(description["functionName_c"],so_path)
-    getControlMap = external(description["functionName_T"],so_path)
+    def getJointSpaceInertiaMatrix(self, q):
+        return self.getJointSpaceInertiaMatrixHandler(DM(q))
 
-    return handler(getJointSpaceInertiaMatrix,getBiasVector,getControlMap,dofConfigurationSpaceRobot,dofControl)
+    def getJointSpaceInertiaMatrixInverse(self, q):
+        H = self.getJointSpaceInertiaMatrixHandler(DM(q))
+
+        if self.usePinv:
+            return pinv(H)
+        else:
+            return np.linalg.solve(H,np.eye(H.shape[0]))
+
+    def getBiasVector(self, q,v):
+        return self.getBiasVectorHandler(DM(q),DM(v))
+
+    def getControlMap(self, q):
+        return self.getControlMapHandler(DM(q))
+
+
+
+def getGeneralizedCoordinatesModelHandlers(description,usePinv=False):
+    return GeneralizedCoordinatesModelHandler(description,usePinv)

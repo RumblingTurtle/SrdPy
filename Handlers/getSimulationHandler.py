@@ -10,10 +10,11 @@ class SimulationHandler():
         self.loggerArray = []
 
     def simulate(self):
-        for i in range(len(self.timeLog)):
+        for i in range(len(self.timeLog)-1):
             self.currentTime = self.timeLog[i]
             self.currentIndex = i
-            for preprocessor in preprocessingHandlersArray:
+
+            for preprocessor in self.preprocessingHandlersArray:
                 preprocessor.update()
 
             for controller in self.controllerArray:

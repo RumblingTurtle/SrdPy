@@ -11,5 +11,5 @@ class StateHandler():
     def getPositionVelocityAcceleration(self):
         return self.q, self.v, self.a
 
-def geStateHandler(initialPosition, initialVelocity):
+def getStateHandler(initialPosition, initialVelocity):
     return StateHandler(initialPosition,initialVelocity,np.full(initialPosition.shape, np.nan),initialPosition.shape[0])
