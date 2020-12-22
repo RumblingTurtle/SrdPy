@@ -19,15 +19,15 @@ class GeneralizedCoordinatesModelHandler():
         H = self.getJointSpaceInertiaMatrixHandler(DM(q))
 
         if self.usePinv:
-            return pinv(H)
+            return DM(pinv(H))
         else:
             return np.linalg.solve(H,np.eye(H.shape[0]))
 
     def getBiasVector(self, q,v):
-        return self.getBiasVectorHandler(DM(q),DM(v))
+        return DM(self.getBiasVectorHandler(DM(q),DM(v)))
 
     def getControlMap(self, q):
-        return self.getControlMapHandler(DM(q))
+        return DM(self.getControlMapHandler(DM(q)))
 
 
 
