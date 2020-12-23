@@ -54,7 +54,11 @@ def getLinkArrayFromUrdf(path,parseMeshses=False):
     for joint in robot.joints:
         child = linkDict[joint.child]
         parent = linkDict[joint.parent]
-        defaultOrientation = np.diag(joint.origin.rpy)
+        if not np.any(joint.origin.rpy):
+            defaultOrientation = np.eye(3)
+        else:
+            defaultOrientation = np.diag(joint.origin.rpy)
+
         parentFollower = joint.origin.xyz
 
         jointClass = getJointClass(joint)
