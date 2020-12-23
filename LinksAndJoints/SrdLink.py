@@ -64,3 +64,12 @@ class SrdLink:
 
         #dynamically added additional parameters
         self.calculated = []
+
+    def update(self,q):
+        self.joint.update(q)
+
+    def addFollower(self,follower):
+        if self.relativeFollower.shape[0]==0:
+            self.relativeFollower = np.array([follower])
+            return
+        self.relativeFollower = np.vstack((self.relativeFollower,follower))

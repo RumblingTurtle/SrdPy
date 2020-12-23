@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+
+<robot name="robot">
+
+<link name="Ground">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0"/>
+      <inertia ixx="1"  ixy="0"  ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
+</link>
+
+<link name="Shin">
+    <inertial>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia ixx="1"  ixy="0"  ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
+</link>
+
+
+<link name="Hip">
+    <inertial>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia ixx="1"  ixy="0"  ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
+</link>
+
+<link name="Torso">
+    <inertial>
+      <origin xyz="0 0 0.5"/>
+      <mass value="1"/>
+      <inertia ixx="1"  ixy="0"  ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
+</link>
+
+
+<joint name="shin_to_ground" type="revolute">
+	<origin xyz="0 0 0" rpy=" 0.785 0 0"/>
+	<child link="Shin"/>
+	<parent link="Ground"/>
+</joint>
+
+<joint name="shin_to_hip" type="revolute">
+	<origin xyz="0 0 1" rpy=" -2.094 0 0"/>
+	<child link="Hip"/>
+	<parent link="Shin"/>
+</joint>
+
+<joint name="hip_to_torso" type="revolute">
+	<origin xyz="0 0 1" rpy=" 1.628 0 0 "/>
+	<child link="Torso"/>
+	<parent link="Hip"/>
+</joint>
+
+</robot>

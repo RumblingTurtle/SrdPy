@@ -20,7 +20,7 @@ class SrdJoint:
 
         self.defaultJointOrientation = np.array(defaultJointOrientation)
 
-        parentLink.joint = self
+        childLink.joint = self
 
 
     def update(self,inputVector):

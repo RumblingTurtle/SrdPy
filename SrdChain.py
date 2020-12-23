@@ -27,5 +27,6 @@ class SrdChain:
         return vertices
 
     def update(self,q):
-        for joint in self.jointArray:
-            joint.update(q)
+        q = np.array(q)
+        for link in self.linkArray:
+            link.update(q)
