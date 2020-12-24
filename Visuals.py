@@ -18,12 +18,12 @@ class SrdVisualizer:
 
         vertices = chain.get_vertex_coords()
 
-        for i in range(len(chain.linkArray) - 1):
-            p1 = chain.linkArray[i].absoluteBase
-            p2 = chain.linkArray[i + 1].absoluteBase
+        for i in range(int(vertices.shape[0]/2)):
+            p1 = vertices[2*i]
+            p2 = vertices[2*i+1]
 
             cylinder_transform = self.get_cylinder_transform(p1,p2)
-            boxVis = vis[chain.linkArray[i].name]
+            boxVis = vis["link"+str(i)]
             boxVis.set_object(g.Cylinder(1, 0.01))
             boxVis.set_transform(cylinder_transform)
 
@@ -53,12 +53,12 @@ class SrdVisualizer:
 
         vertices = chain.get_vertex_coords()
 
-        for i in range(len(chain.linkArray) - 1):
-            p1 = chain.linkArray[i].absoluteBase
-            p2 = chain.linkArray[i + 1].absoluteBase
+        for i in range(int(vertices.shape[0]/2)):
+            p1 = vertices[2*i]
+            p2 = vertices[2*i+1]
 
             cylinder_transform = self.get_cylinder_transform(p1, p2)
-            boxVis = vis[chain.linkArray[i].name]
+            boxVis = vis["link"+str(i)]
             boxVis.set_object(g.Cylinder(1, 0.01))
             boxVis.set_transform(cylinder_transform)
 
@@ -67,12 +67,13 @@ class SrdVisualizer:
             with anim.at_frame(vis, framerate*i) as frame:
                 vertices = chain.get_vertex_coords()
 
-                for i in range(len(chain.linkArray) - 1):
-                    p1 = chain.linkArray[i].absoluteBase
-                    p2 = chain.linkArray[i + 1].absoluteBase
+                for i in range(int(vertices.shape[0] / 2)):
+
+                    p1 = vertices[2 * i]
+                    p2 = vertices[2 * i + 1]
 
                     cylinder_transform = self.get_cylinder_transform(p1, p2)
-                    boxVis = frame[chain.linkArray[i].name]
+                    boxVis = frame["link"+str(i)]
                     boxVis.set_transform(cylinder_transform)
 
         vis.set_animation(anim)

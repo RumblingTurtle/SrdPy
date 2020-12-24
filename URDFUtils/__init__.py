@@ -1,0 +1,1 @@
+from SrdPy.URDFUtils.getLinkArrayFromURDF import getLinkArrayFromUrdf

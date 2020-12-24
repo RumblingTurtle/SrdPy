@@ -1,7 +1,7 @@
 from urdf_parser_py.urdf import URDF
 import numpy as np
 from SrdPy.LinksAndJoints import *
-
+from scipy.spatial.transform import Rotation as R
 def getInertiaMatrixFromValues(ixx,ixy,ixz,iyy,iyz,izz):
     return np.array([[ixx,ixy,ixz],[ixy,iyy,iyz],[ixz,iyz,izz]])
 
@@ -54,10 +54,7 @@ def getLinkArrayFromUrdf(path,parseMeshses=False):
     for joint in robot.joints:
         child = linkDict[joint.child]
         parent = linkDict[joint.parent]
-        if not np.any(joint.origin.rpy):
-            defaultOrientation = np.eye(3)
-        else:
-            defaultOrientation = np.diag(joint.origin.rpy)
+        defaultOrientation = R.from_rotvec(joint.origin.rpy).as_matrix()
 
         parentFollower = joint.origin.xyz
 

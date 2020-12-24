@@ -20,11 +20,12 @@ class SrdChain:
         self.controlDof = len(controlInputs)
 
     def get_vertex_coords(self):
-        vertices = np.array([[0, 0, 0]])
+        vertices = []
         for i, link in enumerate(self.linkArray):
-            if link.name != "Ground":
-                vertices = np.vstack((vertices, link.absoluteBase.tolist()))
-        return vertices
+            for followerCoord in link.absoluteFollower.tolist():
+                vertices.append(link.absoluteBase)
+                vertices.append(followerCoord)
+        return np.array(vertices)
 
     def update(self,q):
         q = np.array(q)
