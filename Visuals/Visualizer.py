@@ -3,18 +3,20 @@ import meshcat.geometry as g
 import meshcat.transformations as tf
 from meshcat.animation import Animation
 from SrdPy.Visuals import getCylinderTransform
-
+import meshcat
 class Visualizer:
     def __init__(self, jupyter = True):
         self.jupyter = jupyter
 
     def show(self, chain,showMeshes=False):
         if self.jupyter:
-            from meshcat.jupyter import JupyterVisualizer
-            vis = JupyterVisualizer()
+            server_args = ['--ngrok_http_tunnel']
+            # Start a single meshcat server instance to use for the remainder of this notebook.
+            from meshcat.servers.zmqserver import start_zmq_server_as_subprocess
+            proc, zmq_url, web_url = start_zmq_server_as_subprocess(server_args=server_args)
+            vis = meshcat.Visualizer(zmq_url=zmq_url)
         else:
-            from meshcat import Visualizer
-            vis = Visualizer().open()
+            vis = meshcat.Visualizer().open()
 
         if showMeshes:
             for i,link in enumerate(chain.linkArray):
@@ -30,6 +32,9 @@ class Visualizer:
                 boxVis.set_transform(tf.translation_matrix(link.absoluteBase)@rotationMatrix)
 
         else:
+            boxVis = vis["links"]
+            boxVis.set_object(g.Line(g.PointsGeometry(chain.get_vertex_coords().T)))
+            return
             vertices = chain.get_vertex_coords()
 
             for i in range(int(vertices.shape[0]/2)):
