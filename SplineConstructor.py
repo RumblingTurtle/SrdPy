@@ -102,8 +102,6 @@ class SplineConstructor():
             self.splineArray[1].append(new_spline.derivativeSpline(1))
             self.splineArray[2].append(new_spline.derivativeSpline(2))
 
-        for spline in self.splineArray[1]:
-            print(spline.coefficients[0])
         return self.splineArray
 
     def evaluateQ(self, t):

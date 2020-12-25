@@ -15,12 +15,7 @@ class SrdJointPivotY(SrdJoint):
         q = inputVector[self.usedGeneralizedCoordinates]
 
         self.childLink.relativeOrientation = self.defaultJointOrientation@SrdMath.rotationMatrix3Dy(q)
-        import numpy as np
-        print("pivot x")
-        print(self.childLink.relativeOrientation)
-        print(np.array(SrdMath.rotationMatrix3Dy(q)))
-        print(self.defaultJointOrientation)
-        print()
+
         self.forwardKinematicsJointUpdate()
 
     def actionUpdate(self,inputVector):

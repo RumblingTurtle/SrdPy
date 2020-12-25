@@ -10,7 +10,7 @@ class Visualizer:
 
     def show(self, chain,showMeshes=False):
         if self.jupyter:
-            from mehscat.jupyter import JupyterVisualizer
+            from meshcat.jupyter import JupyterVisualizer
             vis = JupyterVisualizer()
         else:
             from meshcat import Visualizer

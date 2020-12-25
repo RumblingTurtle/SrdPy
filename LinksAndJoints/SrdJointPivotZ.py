@@ -17,11 +17,7 @@ class SrdJointPivotZ(SrdJoint):
         self.childLink.relativeOrientation = self.defaultJointOrientation@SrdMath.rotationMatrix3Dz(q)
 
         import numpy as np
-        print("Pivot z")
-        print(self.childLink.relativeOrientation)
-        print(np.array(SrdMath.rotationMatrix3Dz(q)))
-        print(self.defaultJointOrientation)
-        print()
+
         self.forwardKinematicsJointUpdate()
 
     def actionUpdate(self,inputVector):
