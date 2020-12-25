@@ -1,11 +1,13 @@
 import numpy as np
 
 
-def rotation_transform(v1,v2):
+def rotationTransform(v1,v2):
   #https://math.stackexchange.com/a/3219491
   v = np.cross(v1, v2)
   u = v/np.linalg.norm(v)
   c = np.dot(v1, v2)
+  if 1-c**2==0:
+      return np.eye(4)
   h = (1 - c)/(1 - c**2)
 
   vx, vy, vz = v

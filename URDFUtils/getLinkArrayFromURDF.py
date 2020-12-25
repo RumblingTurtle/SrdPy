@@ -1,17 +1,20 @@
 from urdf_parser_py.urdf import URDF
 import numpy as np
 from SrdPy.LinksAndJoints import *
-from scipy.spatial.transform import Rotation as R
+from SrdPy.SrdMath import rpyToRotationMatrix
+import os
+import meshcat.geometry as G
 def getInertiaMatrixFromValues(ixx,ixy,ixz,iyy,iyz,izz):
     return np.array([[ixx,ixy,ixz],[ixy,iyy,iyz],[ixz,iyz,izz]])
 
 def getJointClass(joint):
+
    if joint.type == "revolute":
-       if joint.origin.xyz[0]>0:
+       if joint.axis[0]>0:
            return SrdJointPivotX
-       if joint.origin.xyz[1] > 0:
+       if joint.axis[1] > 0:
            return SrdJointPivotY
-       if joint.origin.xyz[2] > 0:
+       if joint.axis[2] > 0:
            return SrdJointPivotZ
 
    if joint.type == "fixed":
@@ -20,7 +23,7 @@ def getJointClass(joint):
 
 
 
-def getLinkArrayFromUrdf(path,parseMeshses=False):
+def getLinkArrayFromURDF(path,parseMeshses=False):
     robot = URDF.from_xml_file(path)
     linkArray = []
     linkDict = {}
@@ -43,9 +46,21 @@ def getLinkArrayFromUrdf(path,parseMeshses=False):
         relativeCOM = link.inertial.origin.xyz
         mass = link.inertial.mass
 
+
         newLink = SrdLink(name=name,order=order,
                         inertia=inertiaMatrix, mass=mass,
                         relativeBase=[0, 0, 0], relativeFollower=[], relativeCoM=relativeCOM)
+        if parseMeshses and link.visual!=None:
+            meshRelativePath = link.visual.geometry.filename.replace("/","\\")
+            meshPath = os.path.dirname(os.path.abspath(path))+"\\"+meshRelativePath
+            if meshRelativePath[-3:]=="obj":
+                meshObj = G.ObjMeshGeometry.from_file(meshPath)
+            elif meshRelativePath[-3:] == "stl":
+                meshObj = G.StlMeshGeometry.from_file(meshPath)
+            else:
+                print("Unknown mesh format: " + meshRelativePath[-3:])
+
+            newLink.meshObj = meshObj
         order = order+1
         linkDict[name] = newLink
         linkArray.append(newLink)
@@ -54,7 +69,7 @@ def getLinkArrayFromUrdf(path,parseMeshses=False):
     for joint in robot.joints:
         child = linkDict[joint.child]
         parent = linkDict[joint.parent]
-        defaultOrientation = R.from_rotvec(joint.origin.rpy).as_matrix()
+        defaultOrientation = rpyToRotationMatrix(joint.origin.rpy)
 
         parentFollower = joint.origin.xyz
 

@@ -1,46 +1,47 @@
 import numpy as np
 import meshcat.geometry as g
 import meshcat.transformations as tf
-from SrdPy.SrdMath import rotation_transform
 from meshcat.animation import Animation
+from SrdPy.Visuals import getCylinderTransform
 
-class SrdVisualizer:
+class Visualizer:
     def __init__(self, jupyter = True):
         self.jupyter = jupyter
 
-    def show(self, chain):
+    def show(self, chain,showMeshes=False):
         if self.jupyter:
-            from meshcat.jupyter import JupyterVisualizer
+            from mehscat.jupyter import JupyterVisualizer
             vis = JupyterVisualizer()
         else:
             from meshcat import Visualizer
             vis = Visualizer().open()
 
-        vertices = chain.get_vertex_coords()
+        if showMeshes:
+            for i,link in enumerate(chain.linkArray):
+                if link.meshObj == None:
+                    continue
+                boxVis = vis["link"+str(i)]
 
-        for i in range(int(vertices.shape[0]/2)):
-            p1 = vertices[2*i]
-            p2 = vertices[2*i+1]
+                boxVis.set_object(link.meshObj,g.MeshLambertMaterial(
+                             color=0xff22dd,
+                             reflectivity=0.8))
+                rotationMatrix = np.pad(link.absoluteOrientation, [(0, 1), (0, 1)], mode='constant')
+                rotationMatrix[-1][-1] = 1
+                boxVis.set_transform(tf.translation_matrix(link.absoluteBase)@rotationMatrix)
 
-            cylinder_transform = self.get_cylinder_transform(p1,p2)
-            boxVis = vis["link"+str(i)]
-            boxVis.set_object(g.Cylinder(1, 0.01))
-            boxVis.set_transform(cylinder_transform)
+        else:
+            vertices = chain.get_vertex_coords()
 
-    @staticmethod
-    def get_cylinder_transform(p1, p2):
-        cylinder_up_vector = [0, 1, 0]
-        cylinder_direction = p2 - p1
+            for i in range(int(vertices.shape[0]/2)):
+                p1 = vertices[2*i]
+                p2 = vertices[2*i+1]
 
-        if np.linalg.norm(cylinder_direction)==0:
-            return np.zeros((4,4))
+                cylinder_transform = getCylinderTransform(p1,p2)
+                boxVis = vis["link"+str(i)]
+                boxVis.set_object(g.Cylinder(1, 0.01))
+                boxVis.set_transform(cylinder_transform)
 
-        rotation_matrix = rotation_transform(cylinder_up_vector,
-                                             cylinder_direction / np.linalg.norm(cylinder_direction))
-        scale_matrix = np.eye(4)
-        scale_matrix[1,1] = np.linalg.norm(cylinder_direction)
-        full_transform = tf.translation_matrix(p1 + 0.5 * cylinder_direction).dot(rotation_matrix.dot(scale_matrix))
-        return np.array(full_transform)
+
 
     def animate(self,chain,states,framerate = 5):
         if self.jupyter:

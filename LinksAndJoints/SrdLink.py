@@ -36,8 +36,6 @@ class SrdLink:
         ##############################################
         #visual properties
         self.color = []
-        self.stlPath = ""
-        self.mesh = {'Faces': [], 'Vertices': []}
 
         self.toDisplay = []
 
@@ -64,6 +62,7 @@ class SrdLink:
 
         #dynamically added additional parameters
         self.calculated = []
+        self.meshObj = None
 
     def update(self,q):
         self.joint.update(q)

@@ -22,7 +22,7 @@ class GroundLink(SrdLink):
 
         self.absoluteOrientationDerivative = np.zeros(3)
         self.angularVelocity = np.array([0,0,0])
-
+        self.meshObj = None
     def addFollower(self,follower):
         pass
 
