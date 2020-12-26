@@ -4,12 +4,13 @@ import meshcat.transformations as tf
 from meshcat.animation import Animation
 from SrdPy.Visuals import getCylinderTransform
 import meshcat
+import sys
 class Visualizer:
-    def __init__(self, jupyter = True):
-        self.jupyter = jupyter
+    def __init__(self):
+        pass
 
     def show(self, chain,showMeshes=False):
-        if self.jupyter:
+        if 'google.colab' in sys.modules:
             server_args = ['--ngrok_http_tunnel']
             # Start a single meshcat server instance to use for the remainder of this notebook.
             from meshcat.servers.zmqserver import start_zmq_server_as_subprocess
@@ -25,7 +26,7 @@ class Visualizer:
                 boxVis = vis["link"+str(i)]
 
                 boxVis.set_object(link.meshObj,g.MeshLambertMaterial(
-                             color=0xff22dd,
+                             color=0xffffff,
                              reflectivity=0.8))
                 rotationMatrix = np.pad(link.absoluteOrientation, [(0, 1), (0, 1)], mode='constant')
                 rotationMatrix[-1][-1] = 1
@@ -49,12 +50,14 @@ class Visualizer:
 
 
     def animate(self,chain,states,framerate = 5):
-        if self.jupyter:
-            from meshcat.jupyter import JupyterVisualizer
-            vis = JupyterVisualizer()
+        if 'google.colab' in sys.modules:
+            server_args = ['--ngrok_http_tunnel']
+            # Start a single meshcat server instance to use for the remainder of this notebook.
+            from meshcat.servers.zmqserver import start_zmq_server_as_subprocess
+            proc, zmq_url, web_url = start_zmq_server_as_subprocess(server_args=server_args)
+            vis = meshcat.Visualizer(zmq_url=zmq_url)
         else:
-            from meshcat import Visualizer
-            vis = Visualizer().open()
+            vis = meshcat.Visualizer().open()
         anim = Animation()
 
         vertices = chain.get_vertex_coords()
@@ -63,7 +66,7 @@ class Visualizer:
             p1 = vertices[2*i]
             p2 = vertices[2*i+1]
 
-            cylinder_transform = self.get_cylinder_transform(p1, p2)
+            cylinder_transform = getCylinderTransform(p1, p2)
             boxVis = vis["link"+str(i)]
             boxVis.set_object(g.Cylinder(1, 0.01))
             boxVis.set_transform(cylinder_transform)
@@ -78,7 +81,7 @@ class Visualizer:
                     p1 = vertices[2 * i]
                     p2 = vertices[2 * i + 1]
 
-                    cylinder_transform = self.get_cylinder_transform(p1, p2)
+                    cylinder_transform = getCylinderTransform(p1, p2)
                     boxVis = frame["link"+str(i)]
                     boxVis.set_transform(cylinder_transform)
 
