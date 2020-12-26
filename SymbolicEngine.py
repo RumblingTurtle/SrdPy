@@ -9,8 +9,9 @@ class SymbolicEngine(SrdChain):
         self.v = SX.sym("v", self.dof)
         self.u = SX.sym("u", self.controlDof)
 
-        self.update(DM(self.q))
+        self.update(self.q)
 
         self._get_joint_space_inertia_matrix = None
         self._get_bais_vector = None
         self._get_control_map = None
+

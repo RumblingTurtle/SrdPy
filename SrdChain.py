@@ -28,6 +28,6 @@ class SrdChain:
         return np.array(vertices)
 
     def update(self,q):
-        q = np.array(q)
+
         for link in self.linkArray:
             link.update(q)
