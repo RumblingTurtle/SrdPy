@@ -6,6 +6,8 @@ class TestSuite():
     def runTests(self):
        threeLinkTester = ThreeLinkTests()
        threeLinkTester.testJSIM()
+       threeLinkTester.testModelVectorC()
+       threeLinkTester.testLinearizationMatrixA()
 
 
 suite = TestSuite()

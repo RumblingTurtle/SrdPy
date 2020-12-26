@@ -46,12 +46,13 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
     TCv = jacobian(T@u+c, v)
 
 
+
     dfdq = -iH@reshape(jacobian(H, q)@(iH@(T@u+c)), n, n) + TCq
 
     dfdv = iH @ TCv
 
     A1 = vertcat(SX.zeros(n, n),SX.eye(n))
-    A2 = vertcat(dfdq,dfdv)
+    A2 = vertcat(dfdq.T,dfdv.T)
     A = horzcat(A1,A2)
 
     B = horzcat(SX.zeros(n, m),iH@T)
