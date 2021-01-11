@@ -11,14 +11,14 @@ def getJointClass(joint):
 
    if joint.type == "revolute":
        if joint.axis[0]>0:
-           return SrdJointPivotX
+           return JointPivotX
        if joint.axis[1] > 0:
-           return SrdJointPivotY
+           return JointPivotY
        if joint.axis[2] > 0:
-           return SrdJointPivotZ
+           return JointPivotZ
 
    if joint.type == "fixed":
-        return SrdJointFixed
+        return JointFixed
 
 
 
@@ -47,7 +47,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
         mass = link.inertial.mass
 
 
-        newLink = SrdLink(name=name,order=order,
+        newLink = Link(name=name,order=order,
                         inertia=inertiaMatrix, mass=mass,
                         relativeBase=[0, 0, 0], relativeFollower=[], relativeCoM=relativeCOM)
         if parseMeshses and link.visual!=None:
@@ -58,6 +58,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
             elif meshRelativePath[-3:] == "stl":
                 meshObj = G.StlMeshGeometry.from_file(meshPath)
             else:
+                meshObj = None
                 print("Unknown mesh format: " + meshRelativePath[-3:])
 
             newLink.meshObj = meshObj
