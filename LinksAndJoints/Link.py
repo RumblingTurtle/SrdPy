@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class SrdLink:
+class Link:
     def __init__(self, name, order, relativeBase, relativeFollower, relativeCoM, mass, inertia):
 
         self.name = name #The name of the link

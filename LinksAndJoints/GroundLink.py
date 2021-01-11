@@ -1,7 +1,7 @@
 import numpy as np
-from SrdPy.LinksAndJoints.SrdLink import SrdLink
+from SrdPy.LinksAndJoints import Link
 
-class GroundLink(SrdLink):
+class GroundLink(Link):
     def __init__(self):
         self.order = 0
         self.name = 'Ground'

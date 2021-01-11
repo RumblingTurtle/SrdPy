@@ -1,11 +1,11 @@
 from SrdPy import SrdMath
-from SrdPy.LinksAndJoints.SrdJoint import SrdJoint
+from SrdPy.LinksAndJoints import Joint
 
-class SrdJointPivotX(SrdJoint):
+class JointPivotX(Joint):
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
                  usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation):
         self.type = "PivotX"
-        super(SrdJointPivotX, self).__init__(name, childLink, parentLink, parentFollowerNumber,
+        super(JointPivotX, self).__init__(name, childLink, parentLink, parentFollowerNumber,
                                             usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation)
     @staticmethod
     def getJointInputsRequirements():

@@ -1,10 +1,10 @@
-from SrdPy.LinksAndJoints.SrdJoint import SrdJoint
+from SrdPy.LinksAndJoints.Joint import Joint
 
-class SrdJointFixed(SrdJoint):
+class JointFixed(Joint):
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
                  usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation):
         self.type = "Fixed"
-        super(SrdJointFixed, self).__init__(name, childLink, parentLink, parentFollowerNumber,
+        super(JointFixed, self).__init__(name, childLink, parentLink, parentFollowerNumber,
                                             usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation)
     @staticmethod
     def getJointInputsRequirements():

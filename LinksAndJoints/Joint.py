@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import matlib
 
-class SrdJoint:
+class Joint:
 
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
                  usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation):
