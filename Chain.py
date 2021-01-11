@@ -1,6 +1,6 @@
 import numpy as np
 
-class SrdChain:
+class Chain:
 
     def __init__(self, linkArray):
         self.linkArray = linkArray

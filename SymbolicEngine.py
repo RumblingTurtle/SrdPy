@@ -1,7 +1,7 @@
-from SrdPy import SrdChain
+from SrdPy import Chain
 from casadi import *
 
-class SymbolicEngine(SrdChain):
+class SymbolicEngine(Chain):
 
     def __init__(self, linkArray):
         super(SymbolicEngine, self).__init__(linkArray)

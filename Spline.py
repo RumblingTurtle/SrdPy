@@ -1,7 +1,7 @@
 from casadi import *
 import numpy as np
 
-class SrdSpline:
+class Spline:
 
     VALID_OUT_OF_BOUNDS_BEHAVIOURS = ["Loop","None","LastValue","Warning&LastValue","OutOfBoundsValue"]
 
@@ -65,7 +65,7 @@ class SrdSpline:
         return np.polyval(C,time)
 
     def derivativeSpline(self,order):
-        derivativeSpline = SrdSpline()
+        derivativeSpline = Spline()
         derivativeSpline.times = np.copy(self.times)
         derivativeSpline.outOfBoundsBehaviour = self.outOfBoundsBehaviour
 

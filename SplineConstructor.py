@@ -1,4 +1,4 @@
-from SrdPy.SrdSpline import SrdSpline
+from SrdPy import Spline
 import numpy as np
 
 class SplineNode():
@@ -97,7 +97,7 @@ class SplineConstructor():
             timesForCurrentSpline = [0]*nodeCount
             for j in range(nodeCount):
                 timesForCurrentSpline[j] = nodes[j].time
-            new_spline = SrdSpline(segments,timesForCurrentSpline)
+            new_spline = Spline(segments,timesForCurrentSpline)
             self.splineArray[0].append(new_spline)
             self.splineArray[1].append(new_spline.derivativeSpline(1))
             self.splineArray[2].append(new_spline.derivativeSpline(2))
