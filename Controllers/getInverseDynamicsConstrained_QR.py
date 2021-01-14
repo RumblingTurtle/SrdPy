@@ -41,5 +41,5 @@ class ControllerHandler():
         self.lambd = lambd
 
 
-def getInverseDynamicsConstrained_QR(controlInputHandler,gcModelHandler,simulationHandler):
-    return ControllerHandler(controlInputHandler,gcModelHandler,simulationHandler)
+def getInverseDynamicsConstrained_QR(controlInputHandler,constraintsModel,gcModelHandler,simulationHandler):
+    return ControllerHandler(controlInputHandler,constraintsModel,gcModelHandler,simulationHandler)

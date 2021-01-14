@@ -4,9 +4,10 @@ import numpy as np
 class GeneralizedCoordinatesModelHandler():
     def __init__(self,description,usePinv):
         so_path = description["path"] + "/" + description["casadi_cCodeFilename"] + ".so"
-
+        
         self.dofConfigurationSpaceRobot = description["dofConfigurationSpaceRobot"]
         self.dofControl = description["dofControl"]
+
         self.getJointSpaceInertiaMatrixHandler = external(description["functionName_H"], so_path)
         self.getBiasVectorHandler = external(description["functionName_c"], so_path)
         self.getControlMapHandler = external(description["functionName_T"], so_path)

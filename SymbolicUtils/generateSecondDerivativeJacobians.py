@@ -10,6 +10,7 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
                                     casadi_cCodeFilename,
                                     path):
 
+    dofTask = task.size()[0]
     taskJacobian = jacobian(task,symbolicEngine.q)
     taskJacobianDerivative = jacobian(taskJacobian,symbolicEngine.q)@symbolicEngine.v
     taskJacobianDerivative = reshape(taskJacobianDerivative, taskJacobian.shape)
@@ -58,4 +59,5 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
             "functionName_TaskJacobianDerivative": functionName_TaskJacobianDerivative,
             "casadi_cCodeFilename": casadi_cCodeFilename,
             "dofRobot":symbolicEngine.dof,
+            "dofTask":dofTask,
             "path": path}

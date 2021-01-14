@@ -10,6 +10,7 @@ def getLinearizedModelHandlers(description):
     dofConfigurationSpaceRobot = description["dofConfigurationSpaceRobot"]
     dofStateSpaceRobot = description["dofStateSpaceRobot"]
     dofControl = description["dofControl"]
+
     getA = external(description["functionName_A"], so_path)
     getB = external(description["functionName_B"], so_path)
     getC = external(description["functionName_c"], so_path)

@@ -35,10 +35,11 @@ def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
     CG.add(g_dynamics_T)
     CG.generate()
 
-    command = "gcc -fPIC -shared "+c_function_name +" -o "+so_function_name
-    print("Running "+command)
+    command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
+    print("Running gcc")
 
-    os.system(command)
+    import subprocess
+    subprocess.Popen(command).wait()
 
     os.chdir(current_cwd)
 

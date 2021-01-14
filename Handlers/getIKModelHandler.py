@@ -7,7 +7,7 @@ class IKModelHandler(Handler):
     def __init__(self,description,dofRobot,dofTask):
         super(IKModelHandler,self).__init__()
         so_path = description["path"] + "/" + description["casadi_cCodeFilename"] + ".so"
-
+        
         self.taskHandler = external(description["functionName_Task"], so_path)
         self.jacobianHandler = external(description["functionName_TaskJacobian"], so_path)
         self.jacobianDerivativeHandler = external(description["functionName_TaskJacobianDerivative"], so_path)

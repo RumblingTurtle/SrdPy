@@ -1,3 +1,4 @@
+from SrdPy.Handlers.getGCModelEvaluatorHandler import GCModelEvaluatorHandler
 from SrdPy.LinksAndJoints import *
 from SrdPy.Handlers import *
 from SrdPy.InverseKinematics import *
@@ -114,9 +115,9 @@ def threeLinkExample():
     IKModelHandler = getIKModelHandler(description_IK, engine.dof, task.shape[0])
     IC_task = IKModelHandler.getTask(initialPosition)
 
-    zeroOrderDerivativeNodes = [[IC_task[0], IC_task[0]],
-                                [IC_task[1], IC_task[1] + 0.15],
-                                [IC_task[2], IC_task[2] - 0.15]]
+    zeroOrderDerivativeNodes = [[IC_task[0], IC_task[0] - 0.15],
+                                [IC_task[1], IC_task[1] + 0.15 ],
+                                [IC_task[2], IC_task[2]]]
 
     firstOrderDerivativeNodes = [[0, 0],
                                  [0, 0],
@@ -157,14 +158,21 @@ def threeLinkExample():
 
     desiredStateSpaceHandler = getStateConverterGenCoord2StateSpaceHandler(desiredStateHandler)
 
-    inverseDynamicsHandler = getIDVanillaDesiredTrajectoryHandler(desiredStateHandler, gcModelEvaluator,
-                                                                  simulationHandler)
+#    inverseDynamicsHandler = getIDVanillaDesiredTrajectoryHandler(desiredStateHandler, gcModelEvaluator,
+#                                                                  simulationHandler)
+    inverseDynamicsHandler = getInverseDynamicsConstrained_QR(
+                            desiredStateHandler,
+                            handlerConstraints,
+                            gcModelEvaluator,
+                            simulationHandler)
 
     computedTorqueController = getComputedTorqueController(stateHandler, desiredStateHandler,
                                                            gcModelEvaluator, simulationHandler, inverseDynamicsHandler,
                                                            500 * np.eye(desiredStateHandler.dofRobot),
                                                            100 * np.eye(desiredStateHandler.dofRobot))
+    
 
+                            
     LQRHandler = getLQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
                                          simulationHandler,
                                          inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
@@ -174,15 +182,14 @@ def threeLinkExample():
 
     linearModelEvaluator.controllerHandler = inverseDynamicsHandler
 
-    taylorSolverHandler = getTaylorSolverHandler(stateHandler, mainController, gcModelEvaluator, simulationHandler)
+    taylorSolverHandler = getConstrainedTaylorSolverHandler(stateHandler, mainController, gcModelEvaluator, simulationHandler,handlerConstraints)
 
     stateHandlerLogger = getStateLoggerHandler(stateHandler, simulationHandler)
 
     tickLogger = getProgressDisplayHandler(simulationHandler)
 
-    preprocessingHandlers = [desiredStateHandler, stateSpaceHandler, desiredStateSpaceHandler, gcModelEvaluator,
-                             linearModelEvaluator]
-    controllerHandlers = [inverseDynamicsHandler, LQRHandler]
+    preprocessingHandlers = [desiredStateHandler, stateSpaceHandler, desiredStateSpaceHandler, gcModelEvaluator]
+    controllerHandlers = [inverseDynamicsHandler, linearModelEvaluator, LQRHandler]
     solverHandlers = [taylorSolverHandler]
     loggerHandlers = [stateHandlerLogger, tickLogger]
 
