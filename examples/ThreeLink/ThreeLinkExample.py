@@ -173,7 +173,11 @@ def threeLinkExample():
     
 
                             
-    LQRHandler = getLQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
+#    LQRHandler = getLQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
+#                                         simulationHandler,
+#                                         inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
+#                                         np.eye(linearModelEvaluator.dofControl))
+    LQRHandler = getConstrainedLQRHandler(stateHandler,stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,handlerConstraints,
                                          simulationHandler,
                                          inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
                                          np.eye(linearModelEvaluator.dofControl))
