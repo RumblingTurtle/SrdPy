@@ -5,11 +5,11 @@
      underwent changes and therefore cannot be exactly generated from the
      original source file. See pull requests #2163, #2520, and #4631.
 
-     Collision models: complex meshes drastically affect run time.
-     Therefore the collision models are removed for all links except for the
-     end effector to speed up the simulation. The collision model for link 7
-     has been modified to utilise a polytope, which offers a significant speed
-     up as well.
+     Collision models: complex meshes can drastically affect run time.
+     Therefore some collision models are represented as simple cylinders
+     instead of meshes. However it's important to have accurate collision
+     models for the end of the arm because we anticipate that the end is the
+     most likely part of the arm to make contact.
 -->
 <!-- ===================================================================== -->
 <robot name="iiwa14" xmlns:xacro="http://www.ros.org/wiki/xacro">
@@ -38,14 +38,7 @@
   <material name="White">
     <color rgba="1.0 1.0 1.0 1.0"/>
   </material>
-  <link name="base"/>
-  <!--iiwa-->
-  <!--joint between {parent} and link_0-->
-  <joint name="base_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0.0"/>
-    <parent link="base"/>
-    <child link="iiwa_link_0"/>
-  </joint>
+
   <link name="iiwa_link_0">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.1 0 0.07"/>
@@ -55,10 +48,17 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/visual/link_0.obj"/>
+        <mesh filename="meshes/visual/link_0.stl"/>
       </geometry>
       <material name="Grey"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.015 0 0.07"/>
+      <geometry>
+          <cylinder radius="0.139" length="0.17"/>
+      </geometry>
+      <material name="Grey"/>
+    </collision>
     <self_collision_checking>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -85,10 +85,17 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/visual/link_1.obj"/>
+        <mesh filename="meshes/visual/link_1.stl"/>
       </geometry>
       <material name="Grey"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -0.014 0.14"/>
+      <geometry>
+          <cylinder radius="0.101" length="0.29"/>
+      </geometry>
+      <material name="Grey"/>
+    </collision>
   </link>
   <!-- joint between link_1 and link_2 -->
   <joint name="iiwa_joint_2" type="revolute">
@@ -109,10 +116,17 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/visual/link_2.obj"/>
+        <mesh filename="meshes/visual/link_2.stl"/>
       </geometry>
       <material name="Orange"/>
     </visual>
+    <collision>
+      <origin rpy="1.57079632679 0 0" xyz="0 0.056 0.035"/>
+      <geometry>
+          <cylinder radius="0.101" length="0.29"/>
+      </geometry>
+      <material name="Orange"/>
+    </collision>
   </link>
   <!-- joint between link_2 and link_3 -->
   <joint name="iiwa_joint_3" type="revolute">
@@ -133,10 +147,17 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/visual/link_3.obj"/>
+        <mesh filename="meshes/visual/link_3.stl"/>
       </geometry>
       <material name="Grey"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0.025 0.137"/>
+      <geometry>
+          <cylinder radius="0.092" length="0.29"/>
+      </geometry>
+      <material name="Grey"/>
+    </collision>
   </link>
   <!-- joint between link_3 and link_4 -->
   <joint name="iiwa_joint_4" type="revolute">
@@ -157,10 +178,17 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/visual/link_4.obj"/>
+        <mesh filename="meshes/visual/link_4.stl"/>
       </geometry>
       <material name="Orange"/>
     </visual>
+    <collision>
+      <origin rpy="1.57079632679 0 0" xyz="0 0.056 0.025"/>
+      <geometry>
+          <cylinder radius="0.092" length="0.25"/>
+      </geometry>
+      <material name="Orange"/>
+    </collision>
   </link>
   <!-- joint between link_4 and link_5 -->
   <joint name="iiwa_joint_5" type="revolute">
@@ -181,10 +209,17 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/visual/link_5.obj"/>
+        <mesh filename="meshes/visual/link_5.stl"/>
       </geometry>
       <material name="Grey"/>
     </visual>
+    <collision>
+      <origin rpy="-0.3 0 0" xyz="0 0.03 0.13"/>
+      <geometry>
+          <cylinder radius="0.07" length="0.29"/>
+      </geometry>
+      <material name="Grey"/>
+    </collision>
   </link>
   <!-- joint between link_5 and link_6 -->
   <joint name="iiwa_joint_6" type="revolute">
@@ -205,10 +240,17 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/visual/link_6.obj"/>
+        <mesh filename="meshes/visual/link_6.stl"/>
       </geometry>
       <material name="Orange"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/collision/link_6.stl"/>
+      </geometry>
+      <material name="Orange"/>
+    </collision>
   </link>
   <!-- joint between link_6 and link_7 -->
   <joint name="iiwa_joint_7" type="revolute">
@@ -229,14 +271,14 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="meshes/visual/link_7.obj"/>
+        <mesh filename="meshes/visual/link_7.stl"/>
       </geometry>
       <material name="Grey"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-         <mesh filename="meshes/collision/link_7_polytope.obj"/>
+        <mesh filename="meshes/collision/link_7.stl"/>
       </geometry>
       <material name="Grey"/>
     </collision>
@@ -255,9 +297,7 @@
     <origin rpy="0 -1.57079632679 0" xyz="0 0 0.045"/>
   </joint>
   <link name="iiwa_link_ee">
-  </link>
-  <frame name="iiwa_frame_ee" link="iiwa_link_ee"
-         xyz="0.09 0 0" rpy="3.14159265359 0 1.57079632679"/>
+    </link>
   <!--Extensions -->
   <!-- Load Gazebo lib and set the robot namespace -->
   <gazebo>

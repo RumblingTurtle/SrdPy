@@ -32,7 +32,8 @@ class Joint:
     def forwardKinematicsJointUpdate(self):
         self.childLink.absoluteBase = self.parentLink.absoluteFollower[self.parentFollowerNumber]
         self.childLink.absoluteOrientation = self.parentLink.absoluteOrientation@self.childLink.relativeOrientation
-
+        if len(self.childLink.relativeFollower)==0:
+            return
         rBaseToFollower = self.childLink.relativeFollower - np.matlib.repmat(self.childLink.relativeBase,self.childLink.relativeFollower.shape[0],1)
         rBaseToCoM = self.childLink.relativeCoM - self.childLink.relativeBase
 

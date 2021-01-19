@@ -1,2 +1,0 @@
-http://wiki.ros.org/urdf/XML/link
-http://wiki.ros.org/urdf/XML/joint

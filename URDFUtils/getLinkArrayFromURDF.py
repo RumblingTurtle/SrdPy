@@ -1,4 +1,5 @@
 from urdf_parser_py.urdf import URDF
+import urdf_parser_py
 import numpy as np
 from SrdPy.LinksAndJoints import *
 from SrdPy.SrdMath import rpyToRotationMatrix
@@ -28,16 +29,19 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
     linkArray = []
     linkDict = {}
     jointArray = []
-    order = 0
+    order = -1 
+    
+        
+    newLink = GroundLink()
+    linkDict["Ground"] = newLink
+    linkArray.append(newLink)
+    
+    linkParserMap={}
+    print("Parsing URDF:"+path)
     for link in robot.links:
-
         if link.inertial==None:
-            newLink = GroundLink()
-            linkDict[link.name] = newLink
-            linkArray.append(newLink)
-            order=order+1
             continue
-            
+
         name = link.name
         inertia = link.inertial.inertia
 
@@ -51,23 +55,32 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
                         inertia=inertiaMatrix, mass=mass,
                         relativeBase=[0, 0, 0], relativeFollower=[], relativeCoM=relativeCOM)
         if parseMeshses and link.visual!=None:
-            meshRelativePath = link.visual.geometry.filename
-            meshPath = os.path.join(os.path.dirname(os.path.abspath(path)),meshRelativePath)
-            if meshRelativePath[-3:]=="obj":
-                meshObj = G.ObjMeshGeometry.from_file(meshPath)
-            elif meshRelativePath[-3:] == "stl":
-                meshObj = G.StlMeshGeometry.from_file(meshPath)
-            else:
-                meshObj = None
-                print("Unknown mesh format: " + meshRelativePath[-3:])
+            if isinstance(link.visual.geometry,urdf_parser_py.urdf.Mesh):
+                meshRelativePath = link.visual.geometry.filename
+                meshPath = os.path.join(os.path.dirname(os.path.abspath(path)),meshRelativePath)
+                if meshRelativePath[-3:]=="obj":
+                    meshObj = G.ObjMeshGeometry.from_file(meshPath)
+                elif meshRelativePath[-3:] == "stl":
+                    meshObj = G.StlMeshGeometry.from_file(meshPath)
+                else:
+                    meshObj = None
+                    print("Unknown mesh format: " + meshRelativePath[-3:])
 
-            newLink.meshObj = meshObj
-        order = order+1
+                newLink.meshObj = meshObj
+            else:
+                print("No mesh assigned for: "+name)
         linkDict[name] = newLink
         linkArray.append(newLink)
+        linkParserMap[name] = (newLink,link)
+
+        chainArray = robot.get_chain(robot.get_root(),link.name, joints=False, links=True, fixed=True)
+        newLink.order = len(chainArray)
 
     coordIndex = 0
     for joint in robot.joints:
+        if joint.child not in linkDict.keys() or joint.parent not in linkDict.keys():
+            continue
+
         child = linkDict[joint.child]
         parent = linkDict[joint.parent]
         defaultOrientation = rpyToRotationMatrix(joint.origin.rpy)
@@ -77,12 +90,18 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
         jointClass = getJointClass(joint)
         jointUsedCoords = jointClass.getJointInputsRequirements()
         coordIndices = np.arange(coordIndex,coordIndex+jointUsedCoords)
-
         parent.addFollower(parentFollower)
         parentFollowerIndex = len(parent.relativeFollower)-1
         newJoint = jointClass(name=joint.name, childLink=child, parentLink=parent, parentFollowerNumber=parentFollowerIndex,
                                    usedGeneralizedCoordinates=coordIndices, usedControlInputs=coordIndices,
                                    defaultJointOrientation=defaultOrientation)
+
         coordIndex=coordIndex+jointUsedCoords
         jointArray.append(newJoint)
+    
+    rootJoint = JointFixed(name="RootToGround", childLink=linkDict[robot.get_root()], parentLink=linkArray[0], parentFollowerNumber=0,
+                            usedGeneralizedCoordinates=[], usedControlInputs=[],
+                            defaultJointOrientation=np.eye(3))
+    linkArray[0].addFollower([0,0,0])
+    jointArray.append(rootJoint)
     return linkArray

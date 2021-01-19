@@ -22,6 +22,7 @@ class Visualizer:
         if showMeshes:
             for i,link in enumerate(chain.linkArray):
                 if link.meshObj == None:
+                    print("No mesh: "+link.name)
                     continue
                 boxVis = vis["link"+str(i)]
 

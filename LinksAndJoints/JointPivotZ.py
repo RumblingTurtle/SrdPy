@@ -16,8 +16,6 @@ class JointPivotZ(Joint):
 
         self.childLink.relativeOrientation = self.defaultJointOrientation@SrdMath.rotationMatrix3Dz(q)
 
-        import numpy as np
-
         self.forwardKinematicsJointUpdate()
 
     def actionUpdate(self,inputVector):
