@@ -27,6 +27,5 @@ class Chain:
         return np.array(vertices)
 
     def update(self,q):
-
         for link in self.linkArray:
             link.update(q)

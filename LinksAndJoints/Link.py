@@ -17,8 +17,8 @@ class Link:
                                     #there can be more than one follower, in that case
                                     #each gets a column in RelativeFollower matrix
 
-        self.absoluteBase = np.array([])         #Position of the Base in the ground RF
-        self.absoluteCoM = np.array([])         #Position of the Center of Mass in the ground RF
+        self.absoluteBase = np.array([0,0,0])        #Position of the Base in the ground RF
+        self.absoluteCoM = np.array([0,0,0])         #Position of the Center of Mass in the ground RF
         self.absoluteOrientation = np.array([])   #Orientation of the local RF relative to the ground RF
         self.absoluteFollower = np.array([])      #Position of the Follower in the ground RF
                                     #(also see description of RelativeFollower)

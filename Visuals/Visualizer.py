@@ -24,7 +24,7 @@ class Visualizer:
                 if link.meshObj == None:
                     print("No mesh: "+link.name)
                     continue
-                boxVis = vis["link"+str(i)]
+                boxVis = vis["link:"+link.name]
 
                 boxVis.set_object(link.meshObj,g.MeshLambertMaterial(
                              color=0xffffff,

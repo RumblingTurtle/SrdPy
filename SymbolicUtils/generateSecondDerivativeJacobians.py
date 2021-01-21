@@ -1,5 +1,6 @@
 from casadi import *
 from SrdPy import SymbolicEngine
+import pickle
 import os
 
 def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
@@ -10,6 +11,16 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
                                     casadi_cCodeFilename,
                                     path):
 
+    
+    pathFolder = os.path.basename(path)
+    picklePath = os.path.join(path,pathFolder+".pkl")
+    
+    if os.path.exists(picklePath):
+        with open(picklePath, 'rb') as f:
+            modelDict = pickle.load(f)
+        print("Loaded existing .so at "+path)
+        return modelDict
+        
     dofTask = task.size()[0]
     taskJacobian = jacobian(task,symbolicEngine.q)
     taskJacobianDerivative = jacobian(taskJacobian,symbolicEngine.q)@symbolicEngine.v
@@ -37,7 +48,7 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
     if os.path.isdir(path):
         os.chdir(path)
     else:
-        os.mkdir(path)
+        os.makedirs(path)
         os.chdir(path)
 
     CG = CodeGenerator(c_function_name)
@@ -46,18 +57,26 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
     CG.add(g_InverseKinematics_TaskJacobianDerivative)
     CG.generate()
 
-    command = "gcc -fPIC -shared " + c_function_name + " -o " + so_function_name
-    print("Running " + command)
+    command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
+    print("Running gcc")
 
-    os.system(command)
+    import subprocess
+    exitcode = subprocess.Popen(command).wait()
+    if exitcode!=0:
+        print("GCC compilation error")
+        return {}
 
     os.chdir(current_cwd)
     print("Generated C code!")
-
-    return {"functionName_Task": functionName_Task,
+    resultDict = {"functionName_Task": functionName_Task,
             "functionName_TaskJacobian": functionName_TaskJacobian,
             "functionName_TaskJacobianDerivative": functionName_TaskJacobianDerivative,
             "casadi_cCodeFilename": casadi_cCodeFilename,
             "dofRobot":symbolicEngine.dof,
             "dofTask":dofTask,
             "path": path}
+
+    with open(picklePath, 'wb') as f:
+        pickle.dump(resultDict, f)
+
+    return resultDict

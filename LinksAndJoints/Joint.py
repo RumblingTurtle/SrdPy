@@ -39,4 +39,4 @@ class Joint:
 
         self.childLink.absoluteFollower = np.matlib.repmat(self.childLink.absoluteBase,self.childLink.relativeFollower.shape[0], 1) + self.childLink.absoluteOrientation.dot(rBaseToFollower.T).T
 
-        self.childLink.absoluteCoM = self.childLink.absoluteBase + self.childLink.absoluteOrientation.dot(rBaseToCoM)
+        self.childLink.absoluteCoM = self.childLink.absoluteOrientation@rBaseToCoM+self.childLink.absoluteBase

@@ -1,6 +1,8 @@
 from casadi import *
 from SrdPy import SymbolicEngine
+import pickle
 import os
+import sys
 
 def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
                                     H, c, T,
@@ -9,6 +11,15 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
                                     functionName_c,
                                     casadi_cCodeFilename,
                                     path):
+
+    pathFolder = os.path.basename(path)
+    picklePath = os.path.join(path,pathFolder+".pkl")
+
+    if os.path.exists(picklePath):
+        with open(picklePath, 'rb') as f:
+            modelDict = pickle.load(f)
+        print("Loaded existing .so at "+path)
+        return modelDict
 
     # H*ddq + c = T*u;        ddq = dv/dt; v = dq/dt;
     # x = [q; v]
@@ -42,23 +53,22 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
 
     iH = SX.sym('iH', n, n)
 
-    TCq = jacobian(T@u+c, q)
-    TCv = jacobian(T@u+c, v)
+    TuPc = T@u+c
+    TCq = jacobian(TuPc, q)
+    TCv = jacobian(TuPc, v)
 
 
 
-    dfdq = -iH@reshape(jacobian(H, q)@(iH@(T@u+c)), n, n) + TCq
+    dfdq = -iH@reshape(jtimes(H, q,iH@TuPc), n, n) + TCq
 
     dfdv = iH @ TCv
 
     A1 = vertcat(SX.zeros(n, n),SX.eye(n))
     A2 = vertcat(dfdq.T,dfdv.T)
+
     A = horzcat(A1,A2)
-
     B = horzcat(SX.zeros(n, m),iH@T)
-
-    linear_c = horzcat(SX.zeros(n, 1),iH@c - dfdq@q - dfdv@v)
-
+    #linear_c = horzcat(SX.zeros(n, 1),iH@c - dfdq@q - dfdv@v)
     print('Starting writing function for the '+functionName_A)
     g_linearization_A = Function(functionName_A,
                                  [symbolicEngine.q,symbolicEngine.v,symbolicEngine.u,iH], [A],
@@ -69,10 +79,10 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
                                  [symbolicEngine.q,symbolicEngine.v,iH], [B],
                                  ['q', 'v', 'iH'], ['B'])
 
-    print('Starting writing function for the ' + functionName_c)
-    g_linearization_c = Function(functionName_c,
-                                     [symbolicEngine.q, symbolicEngine.v, symbolicEngine.u, iH], [linear_c],
-                                     ['q', 'v', 'u', 'iH'], ['c'])
+    # print('Starting writing function for the ' + functionName_c)
+    # g_linearization_c = Function(functionName_c,
+    #                                  [symbolicEngine.q, symbolicEngine.v, symbolicEngine.u, iH], [linear_c],
+    #                                  ['q', 'v', 'u', 'iH'], ['c'])
 
     c_function_name = casadi_cCodeFilename+'.c'
     so_function_name = casadi_cCodeFilename+'.so'
@@ -81,24 +91,28 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
     if os.path.isdir(path):
         os.chdir(path)
     else:
-        os.mkdir(path)
+        os.makedirs(path)
         os.chdir(path)
 
     CG = CodeGenerator(c_function_name)
     CG.add(g_linearization_A)
     CG.add(g_linearization_B)
-    CG.add(g_linearization_c)
+    #CG.add(g_linearization_c)
     CG.generate()
+    
+    command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
+    print("Running gcc")
 
-    command = "gcc -fPIC -shared " + c_function_name + " -o " + so_function_name
-    print("Running " + command)
-
-    os.system(command)
+    import subprocess
+    exitcode = subprocess.Popen(command).wait()
+    if exitcode!=0:
+        print("GCC compilation error")
+        return {}
 
     os.chdir(current_cwd)
     print("Generated C code!")
 
-    return {"functionName_A": functionName_A,
+    resultDict = {"functionName_A": functionName_A,
             "functionName_B": functionName_B,
             "functionName_c": functionName_c,
             "casadi_cCodeFilename": casadi_cCodeFilename,
@@ -106,3 +120,8 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
             "dofConfigurationSpaceRobot": n,
             "dofStateSpaceRobot": 2 * n,
             "dofControl": m}
+
+    with open(picklePath, 'wb') as f:
+        pickle.dump(resultDict, f)
+
+    return resultDict

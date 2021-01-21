@@ -89,6 +89,7 @@ def threeLinkExample():
                                                               functionName_c="g_linearization_c",
                                                               casadi_cCodeFilename="g_dynamics_linearization",
                                                               path="./Linearization")
+                                                              
     handlerLinearizedModel = getLinearizedModelHandlers(description_linearization)
 
     constraint = engine.linkArray[3].absoluteFollower[0][2]

@@ -1,5 +1,6 @@
 from casadi import *
 import os
+import pickle
 from SrdPy import SymbolicEngine
 
 def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
@@ -10,6 +11,16 @@ def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
                                                 casadi_cCodeFilename,
                                                 path):
 
+        
+    pathFolder = os.path.basename(path)
+    picklePath = os.path.join(path,pathFolder+".pkl")
+    
+    if os.path.exists(picklePath):
+        with open(picklePath, 'rb') as f:
+            modelDict = pickle.load(f)
+        print("Loaded existing .so at "+path)
+        return modelDict
+        
     print('Starting writing function for the '+functionName_H)
     g_dynamics_H = Function(functionName_H, [symbolicEngine.q], [H], ['q'], ['H'])
 
@@ -26,7 +37,7 @@ def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
     if os.path.isdir(path):
         os.chdir(path)
     else:
-        os.mkdir(path)
+        os.makedirs(path)
         os.chdir(path)
 
     CG = CodeGenerator(c_function_name)
@@ -39,17 +50,25 @@ def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
     print("Running gcc")
 
     import subprocess
-    subprocess.Popen(command).wait()
+    exitcode = subprocess.Popen(command).wait()
+    if exitcode!=0:
+        print("GCC compilation error")
+        return {}
 
     os.chdir(current_cwd)
 
     print("Generated C code!")
 
-    return     {"functionName_H":functionName_H,
+    resultDict = {"functionName_H":functionName_H,
                 "functionName_c":functionName_c,
                 "functionName_T":functionName_T,
                 "casadi_cCodeFilename":casadi_cCodeFilename,
                 "path":path,
                 "dofConfigurationSpaceRobot":symbolicEngine.dof,
                 "dofControl":symbolicEngine.u.shape[0]}
+
+    with open(picklePath, 'wb') as f:
+        pickle.dump(resultDict, f)
+
+    return resultDict
 

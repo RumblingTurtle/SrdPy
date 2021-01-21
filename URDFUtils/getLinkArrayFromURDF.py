@@ -38,6 +38,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
     
     linkParserMap={}
     print("Parsing URDF:"+path)
+    print("Root node: "+robot.get_root())
     for link in robot.links:
         if link.inertial==None:
             continue

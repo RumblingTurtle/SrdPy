@@ -4,12 +4,12 @@ from SrdPy import SymbolicEngine
 
 def deriveJacobiansForlinkArray(symbolicEngine:SymbolicEngine):
     for link in symbolicEngine.linkArray:
+        
         link.jacobianCenterOfMass = jacobian(link.absoluteCoM, symbolicEngine.q)
-        tVec = SX.reshape(link.absoluteOrientation, (9, 1))
 
-        tVecJacobian = jacobian(tVec, symbolicEngine.q)
-
-        link.absoluteOrientationDerivative = reshape(tVecJacobian @ symbolicEngine.v, 3, 3)
+        tVec = reshape(link.absoluteOrientation, 9, 1)
+        tJac = jacobian(tVec, symbolicEngine.q)
+        link.absoluteOrientationDerivative = reshape(tJac@symbolicEngine.v, 3, 3)
 
         # this is the so-called Poisson formula, that defines the
         # relations between the matrix of directional cosines and
@@ -32,5 +32,8 @@ def deriveJacobiansForlinkArray(symbolicEngine:SymbolicEngine):
 
         #The following gives us angular velocity w, expressed in the
         #local frame, see description of the angular velocity tensor.
-        link.angularVelocity = SX(np.array([-omega[1, 2], omega[0, 2], -omega[0, 1]]))
+        link.angularVelocity = SX.sym("angularVelocity",3)
+        link.angularVelocity[0] = -omega[1, 2]
+        link.angularVelocity[1] = omega[0, 2]
+        link.angularVelocity[2] = -omega[0, 1]
         link.jacobianAngularVelocity = jacobian(link.angularVelocity, symbolicEngine.v)
