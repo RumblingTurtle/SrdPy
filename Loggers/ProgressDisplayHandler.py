@@ -6,6 +6,3 @@ class ProgressDisplayHandler():
         currentTick = self.simulationHandler.currentIndex
         totalTicks = self.simulationHandler.timeLog.shape[0]
         print("Simulated {} out of {} steps".format(currentTick,totalTicks))
-
-def getProgressDisplayHandler(simulationHandler):
-    return ProgressDisplayHandler(simulationHandler)

@@ -42,6 +42,3 @@ class ConstrainedTaylorSolverHandler():
         self.stateHandler.q = q
         self.stateHandler.v = v
         self.stateHandler.a = a
-
-def getConstrainedTaylorSolverHandler(stateHandler,controllerHandler,gcModelHandler,simulationHandler,constraintsModel):
-    return ConstrainedTaylorSolverHandler(stateHandler,controllerHandler,gcModelHandler,simulationHandler,constraintsModel)

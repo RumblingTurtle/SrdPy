@@ -1,7 +1,7 @@
 import numpy as np
 from casadi import *
 
-class OdeFunctionHandler:
+class LinearizedModelOdeFunctionHandler:
     def __init__(self, gcModelHandler, linearizedModelHandler, K_table, x_table, u_table, time_table):
         self.gcModelHandler = gcModelHandler
         self.linearizedModelHandler = linearizedModelHandler
@@ -39,6 +39,3 @@ class OdeFunctionHandler:
         f0 = vertcat(v_desired,a_desired)
         dx = f0 + A@(x - x_desired) + B@(u - u_desired)
         return dx
-
-def getLinearizedModelOdeFunctionHandler(gcModelHandler, linearizedModelHandler, K_table, x_table, u_table, time_table):
-    return OdeFunctionHandler(gcModelHandler, linearizedModelHandler, K_table, x_table, u_table, time_table)

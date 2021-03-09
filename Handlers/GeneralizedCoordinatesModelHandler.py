@@ -2,7 +2,7 @@ from casadi import *
 import numpy as np
 
 class GeneralizedCoordinatesModelHandler():
-    def __init__(self,description,usePinv):
+    def __init__(self,description,usePinv=True):
         so_path = description["path"] + "/" + description["casadi_cCodeFilename"] + ".so"
         
         self.dofConfigurationSpaceRobot = description["dofConfigurationSpaceRobot"]
@@ -29,8 +29,3 @@ class GeneralizedCoordinatesModelHandler():
 
     def getControlMap(self, q):
         return DM(self.getControlMapHandler(DM(q)))
-
-
-
-def getGeneralizedCoordinatesModelHandlers(description,usePinv=False):
-    return GeneralizedCoordinatesModelHandler(description,usePinv)

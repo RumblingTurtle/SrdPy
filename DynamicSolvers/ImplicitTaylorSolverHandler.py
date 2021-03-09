@@ -46,7 +46,3 @@ class ImplicitTaylorSolverHandler():
         self.stateHandler.q = z[:n]
         self.stateHandler.v = z[n:2*n]
         self.stateHandler.a = z[2*n:]
-
-
-def getImplicitTaylorSolverHandler(stateHandler, controllerHandler, gcModelHandler, simulationHandler):
-    return ImplicitTaylorSolverHandler(stateHandler, controllerHandler, gcModelHandler, simulationHandler)

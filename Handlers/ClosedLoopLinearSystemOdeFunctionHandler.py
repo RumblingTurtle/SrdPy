@@ -12,7 +12,3 @@ class ClosedLoopLinearSystemOdeFunctionHandler:
         cc = self.cc_table[closest_index]
         
         return AA@x + cc
-
-
-def getClosedLoopLinearSystemOdeFunctionHandler(AA_table, cc_table, time_table):
-    return ClosedLoopLinearSystemOdeFunctionHandler(AA_table, cc_table, time_table)

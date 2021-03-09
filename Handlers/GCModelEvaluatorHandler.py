@@ -1,7 +1,7 @@
 import numpy as np
 from casadi import *
 class GCModelEvaluatorHandler():
-    def __init__(self,generalizedCoordinatesModel,stateHandler, usePinv):
+    def __init__(self,generalizedCoordinatesModel,stateHandler, usePinv=True):
         self.gCModel = generalizedCoordinatesModel
         self.stateHandler = stateHandler
         self.dofConfigurationSpaceRobot = self.gCModel.dofConfigurationSpaceRobot
@@ -40,6 +40,3 @@ class GCModelEvaluatorHandler():
 
     def getJointSpaceInertiaMatrixInverse(self,*args):
         return self.jointSpaceInertiaMatrixInverse
-
-def getGCModelEvaluatorHandler(generalizedCoordinatesModel,stateHandler,usePinv=True):
-    return GCModelEvaluatorHandler(generalizedCoordinatesModel,stateHandler,usePinv)

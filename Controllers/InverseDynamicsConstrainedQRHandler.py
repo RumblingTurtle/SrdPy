@@ -39,6 +39,3 @@ class InverseDynamicsConstrainedQRHandler:
         self.inverseDynamicsHandler.u = u_FF
         
         self.inverseDynamicsHandler.lambd = lambd
-
-def getInverseDynamicsConstrainedQRHandler(inverseDynamicsHandler, controlInputHandler, gcModelHandler, constraintsModelHandler, simulationHandler):
-    return InverseDynamicsConstrainedQRHandler(inverseDynamicsHandler, controlInputHandler, gcModelHandler, constraintsModelHandler, simulationHandler)

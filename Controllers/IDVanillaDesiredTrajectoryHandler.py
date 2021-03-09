@@ -1,5 +1,5 @@
 import numpy as np
-class ControllerHandler():
+class IDVanillaDesiredTrajectoryHandler():
     def __init__(self,controlInputHandler,gcModelHandler,simulationHandler):
         self.controlInputHandler = controlInputHandler
         self.gcModelHandler = gcModelHandler
@@ -16,7 +16,3 @@ class ControllerHandler():
         c = self.gcModelHandler.getBiasVector(q,v)
 
         self.u = np.linalg.pinv(T)@(H@a+c)
-
-
-def getIDVanillaDesiredTrajectoryHandler(controlInputHandler,gcModelHandler,simulationHandler):
-    return ControllerHandler(controlInputHandler,gcModelHandler,simulationHandler)

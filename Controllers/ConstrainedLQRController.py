@@ -50,8 +50,3 @@ class ConstrainedLQRController():
         u_FF = self.inverseDynamicsHandler.u
 
         self.u = u_FB + u_FF
-
-def getConstrainedLQRHandler(stateHandler,stateSpaceHandler,controlInputStateSpaceHandler,
-                 linearizedModelHandler,constraints,simulationHandler,inverseDynamicsHandler,Q,R):
-    return ConstrainedLQRController(stateHandler,stateSpaceHandler,controlInputStateSpaceHandler,
-                 linearizedModelHandler,constraints,simulationHandler,inverseDynamicsHandler,Q,R)

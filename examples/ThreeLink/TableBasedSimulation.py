@@ -1,6 +1,5 @@
 from SrdPy.TableGenerators.generateConstraiedLinearModelTable import generateConstraiedLinearModelTable
 from SrdPy.TableGenerators.generateLinearModelTable import generateLinearModelTable
-from SrdPy.Handlers.getGCModelEvaluatorHandler import GCModelEvaluatorHandler
 from SrdPy.LinksAndJoints import *
 from SrdPy.Handlers import *
 from SrdPy.InverseKinematics import *

@@ -1,6 +1,6 @@
 from casadi import *
 
-class LinearizedModelHandlers:
+class LinearizedModelHandler:
 
     def __init__(self,description):
         so_path = description["path"] + "/" + description["casadi_cCodeFilename"] + ".so"
@@ -20,6 +20,3 @@ class LinearizedModelHandlers:
 
     def getC(self,**args):
         return self.Chandler(args)
-
-def getLinearizedModelHandlers(description):
-    return LinearizedModelHandlers(description)

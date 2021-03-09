@@ -26,6 +26,3 @@ class TaylorSolverHandler():
         self.stateHandler.q = q
         self.stateHandler.v = v
         self.stateHandler.a = a
-
-def getTaylorSolverHandler(stateHandler,controllerHandler,gcModelHandler,simulationHandler):
-    return TaylorSolverHandler(stateHandler,controllerHandler,gcModelHandler,simulationHandler)

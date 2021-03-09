@@ -2,7 +2,7 @@ from scipy import interpolate
 import numpy as np
 from casadi import *
 class IKSolutionHandler():
-    def __init__(self,IKModelHandler,IKTaskHandler,timeTable,IKTable,method):
+    def __init__(self,IKModelHandler,IKTaskHandler,timeTable,IKTable,method="linear"):
         self.IKModelHandler = IKModelHandler
         self.IKTaskHandler = IKTaskHandler
         self.timeTable = timeTable
@@ -41,7 +41,3 @@ class IKSolutionHandler():
         a = res[self.IKModelHandler.dofRobot:]
 
         return q, v, a
-
-def getIKSolutionHandler(IKModelHandler,IKTaskHandler,timeTable,IKTable,method="linear"):
-    return IKSolutionHandler(IKModelHandler,IKTaskHandler,timeTable,IKTable,method)
-

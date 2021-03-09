@@ -4,7 +4,7 @@ import numpy as np
 from SrdPy.InverseKinematics import inversePositionProblemSolver_lsqnonlin
 
 
-def inverseKinematicsGenerateTable(IKModelHandler,IKTaskHandler,initialGuess,timeTable,method=None,opts=None):
+def generateIKTable(IKModelHandler,IKTaskHandler,initialGuess,timeTable,method=None,opts=None):
     count = len(timeTable)
     dof = IKModelHandler.dofRobot
 

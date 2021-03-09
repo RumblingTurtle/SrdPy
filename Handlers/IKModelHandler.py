@@ -25,6 +25,3 @@ class IKModelHandler(Handler):
 
     def getJacobianDerivative(self, q,v):
         return self.jacobianDerivativeHandler(q,v)
-
-def getIKModelHandler(description,dofRobot,dofTask):
-    return IKModelHandler(description,dofRobot,dofTask)

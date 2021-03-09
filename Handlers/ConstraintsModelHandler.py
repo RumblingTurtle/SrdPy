@@ -23,6 +23,3 @@ class ConstraintsModelHandler:
 
     def getJacobianDerivative(self,q,v):
         return self.jacobianDerivativeHandler(q,v)
-
-def getConstraintsModelHandlers(description,dofRobot):
-    return ConstraintsModelHandler(description,dofRobot)

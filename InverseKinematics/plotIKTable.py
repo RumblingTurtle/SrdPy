@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-def inversekinematicsGenerateTableTester(IKModelHandler,timeTable,IKTable,tol=10**(-5)):
+def plotIKTable(IKModelHandler,timeTable,IKTable,tol=10**(-5)):
     count = len(timeTable)
 
     condition_number_tape = np.zeros((count, 1))

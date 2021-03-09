@@ -1,7 +1,7 @@
 import numpy as np
 from casadi import *
 class StateLoggerHandler():
-    def __init__(self,stateHandler,simulationHandler,logAcceleration):
+    def __init__(self,stateHandler,simulationHandler,logAcceleration = True):
         self.stateHandler = stateHandler
         self.simulationHandler = simulationHandler
         self.logAcceleration = logAcceleration
@@ -17,8 +17,3 @@ class StateLoggerHandler():
 
         if self.logAcceleration:
             self.a.append(np.array(DM(self.stateHandler.a)).T[0])
-
-
-
-def getStateLoggerHandler(stateHandler,simulationHandler,logAcceleration = True):
-    return StateLoggerHandler(stateHandler,simulationHandler,logAcceleration)

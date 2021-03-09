@@ -1,4 +1,3 @@
-from SrdPy.Handlers.getGCModelEvaluatorHandler import GCModelEvaluatorHandler
 from SrdPy.LinksAndJoints import *
 from SrdPy.Handlers import *
 from SrdPy.InverseKinematics import *
@@ -81,7 +80,7 @@ def threeLinkExample():
                                                                               casadi_cCodeFilename="g_dynamics_generalized_coordinates",
                                                                               path="./Dynamics")
 
-    handlerGeneralizedCoordinatesModel = getGeneralizedCoordinatesModelHandlers(description_gen_coord_model)
+    handlerGeneralizedCoordinatesModel = GeneralizedCoordinatesModelHandler(description_gen_coord_model)
 
     description_linearization = generateDynamicsLinearization(engine,
                                                               H=H,
@@ -93,7 +92,7 @@ def threeLinkExample():
                                                               casadi_cCodeFilename="g_dynamics_linearization",
                                                               path="./Linearization")
                                                               
-    handlerLinearizedModel = getLinearizedModelHandlers(description_linearization)
+    handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
     constraint = engine.linkArray[3].absoluteFollower[0][2]
 
@@ -104,7 +103,7 @@ def threeLinkExample():
                                                                 functionName_TaskJacobianDerivative="g_Constraint_Jacobian_derivative",
                                                                 casadi_cCodeFilename="g_Constraints",
                                                                 path="./Constraints")
-    handlerConstraints = getConstraintsModelHandlers(description_constraints, engine.dof)
+    handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof)
 
     task = vertcat(vertcat(engine.q[0], engine.q[1]), constraint)
 
@@ -116,8 +115,8 @@ def threeLinkExample():
                                                        casadi_cCodeFilename="g_InverseKinematics",
                                                        path="./InverseKinematics")
 
-    IKModelHandler = getIKModelHandler(description_IK, engine.dof, task.shape[0])
-    IC_task = IKModelHandler.getTask(initialPosition)
+    ikModelHandler = IKModelHandler(description_IK, engine.dof, task.shape[0])
+    IC_task = ikModelHandler.getTask(initialPosition)
 
     zeroOrderDerivativeNodes = [[IC_task[0], IC_task[0] - 0.15],
                                 [IC_task[1], IC_task[1] + 0.15 ],
@@ -135,42 +134,42 @@ def threeLinkExample():
     timeEnd = (len(zeroOrderDerivativeNodes[1]) - 1) * timeOfOneStage + 1
     nodeTimes = np.arange(start=0, stop=timeEnd, step=timeOfOneStage)
 
-    handlerIK_taskSplines = getIKtaskSplinesHandler(nodeTimes,
+    handlerIK_taskSplines = IKtaskSplinesHandler(nodeTimes,
                                                     zeroOrderDerivativeNodes, firstOrderDerivativeNodes,
                                                     secondOrderDerivativeNodes)
 
     timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
-    IKTable = inverseKinematicsGenerateTable(IKModelHandler, handlerIK_taskSplines, initialPosition, timeTable)
+    IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable)
 
-    inversekinematicsGenerateTableTester(IKModelHandler, timeTable, IKTable)
+    plotIKTable(ikModelHandler, timeTable, IKTable)
 
-    IKSolutionHandler = getIKSolutionHandler(IKModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
+    ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
-    stateHandler = getStateHandler(initialPosition, np.zeros(len(initialPosition)))
-    gcModelEvaluator = getGCModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, stateHandler)
-    linearModelEvaluator = getLinearModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, handlerLinearizedModel,
+    stateHandler = StateHandler(initialPosition, np.zeros(len(initialPosition)))
+    gcModelEvaluator = GCModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, stateHandler)
+    linearModelEvaluator = LinearModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, handlerLinearizedModel,
                                                           stateHandler, [], False)
 
     dt = 0.001
-    tf = IKSolutionHandler.timeExpiration
+    tf = ikSolutionHandler.timeExpiration
 
-    simulationHandler = getSimulationHandler(np.arange(0, tf, dt))
+    simulationHandler = SimulationHandler(np.arange(0, tf, dt))
 
-    desiredStateHandler = getDesiredStateHandler(IKSolutionHandler, simulationHandler)
+    desiredStateHandler = DesiredStateHandler(ikSolutionHandler, simulationHandler)
 
-    stateSpaceHandler = getStateConverterGenCoord2StateSpaceHandler(stateHandler)
+    stateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(stateHandler)
 
-    desiredStateSpaceHandler = getStateConverterGenCoord2StateSpaceHandler(desiredStateHandler)
+    desiredStateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(desiredStateHandler)
 
 #    inverseDynamicsHandler = getIDVanillaDesiredTrajectoryHandler(desiredStateHandler, gcModelEvaluator,
 #                                                                  simulationHandler)
-    inverseDynamicsHandler = getInverseDynamicsConstrained_QR(
+    inverseDynamicsHandler = InverseDynamicsConstrained_QR(
                             desiredStateHandler,
                             handlerConstraints,
                             gcModelEvaluator,
                             simulationHandler)
 
-    computedTorqueController = getComputedTorqueController(stateHandler, desiredStateHandler,
+    computedTorqueController = ComputedTorqueController(stateHandler, desiredStateHandler,
                                                            gcModelEvaluator, simulationHandler, inverseDynamicsHandler,
                                                            500 * np.eye(desiredStateHandler.dofRobot),
                                                            100 * np.eye(desiredStateHandler.dofRobot))
@@ -181,7 +180,7 @@ def threeLinkExample():
 #                                         simulationHandler,
 #                                         inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
 #                                         np.eye(linearModelEvaluator.dofControl))
-    LQRHandler = getConstrainedLQRHandler(stateHandler,stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,handlerConstraints,
+    LQRHandler = ConstrainedLQRController(stateHandler,stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,handlerConstraints,
                                          simulationHandler,
                                          inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
                                          np.eye(linearModelEvaluator.dofControl))
@@ -190,11 +189,11 @@ def threeLinkExample():
 
     linearModelEvaluator.controllerHandler = inverseDynamicsHandler
 
-    taylorSolverHandler = getConstrainedTaylorSolverHandler(stateHandler, mainController, gcModelEvaluator, simulationHandler,handlerConstraints)
+    taylorSolverHandler = ConstrainedTaylorSolverHandler(stateHandler, mainController, gcModelEvaluator, simulationHandler,handlerConstraints)
 
-    stateHandlerLogger = getStateLoggerHandler(stateHandler, simulationHandler)
+    stateHandlerLogger = StateLoggerHandler(stateHandler, simulationHandler)
 
-    tickLogger = getProgressDisplayHandler(simulationHandler)
+    tickLogger = ProgressDisplayHandler(simulationHandler)
 
     preprocessingHandlers = [desiredStateHandler, stateSpaceHandler, desiredStateSpaceHandler, gcModelEvaluator]
     controllerHandlers = [inverseDynamicsHandler, linearModelEvaluator, LQRHandler]

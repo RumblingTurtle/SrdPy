@@ -4,7 +4,7 @@ import scipy
 #Mistry, M., Buchli, J. and Schaal, S., 2010, May. Inverse dynamics control of floating base 
 #systems using orthogonal decomposition. In 2010 IEEE international conference on robotics 
 #and automation (pp. 3406-3412). IEEE.
-class ControllerHandler():
+class InverseDynamicsConstrained_QR():
     def __init__(self,controlInputHandler,constraintsModel,gcModelHandler,simulationHandler):
         self.controlInputHandler = controlInputHandler
         self.constraintsModel = constraintsModel
@@ -39,7 +39,3 @@ class ControllerHandler():
 
         self.u = u_FF
         self.lambd = lambd
-
-
-def getInverseDynamicsConstrained_QR(controlInputHandler,constraintsModel,gcModelHandler,simulationHandler):
-    return ControllerHandler(controlInputHandler,constraintsModel,gcModelHandler,simulationHandler)

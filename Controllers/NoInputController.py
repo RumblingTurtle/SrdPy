@@ -7,7 +7,3 @@ class NoInputController():
 
     def update(self):
         self.u = np.zeros((self.gcModelHandler.dofControl,1))
-
-
-def getNoInputController(gcModelHandler):
-    return NoInputController(gcModelHandler)

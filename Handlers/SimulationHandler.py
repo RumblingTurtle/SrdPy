@@ -1,8 +1,8 @@
 class SimulationHandler():
     
-    def __init__(self,timeLog,currentTime):
+    def __init__(self,timeLog):
         self.timeLog = timeLog
-        self.currentTime = currentTime
+        self.currentTime = timeLog[0]
         self.currentIndex = None
         self.preprocessingHandlersArray = []
         self.controllerArray = []
@@ -25,6 +25,3 @@ class SimulationHandler():
 
             for logger in self.loggerArray:
                 logger.update()
-
-def getSimulationHandler(timeLog):
-    return SimulationHandler(timeLog,timeLog[0])

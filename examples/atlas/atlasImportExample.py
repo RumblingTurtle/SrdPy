@@ -1,4 +1,3 @@
-from SrdPy.Handlers.getGCModelEvaluatorHandler import GCModelEvaluatorHandler
 from SrdPy.LinksAndJoints import *
 from SrdPy.Handlers import *
 from SrdPy.InverseKinematics import *

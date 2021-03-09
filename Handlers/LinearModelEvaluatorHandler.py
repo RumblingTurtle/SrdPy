@@ -1,12 +1,12 @@
 from casadi import *
 class LinearModelEvaluatorHandler():
-    def __init__(self,gcModel,linearizedModel,stateHandler,controllerHandler,dofRobotStateSpace,dofControl,toEvaluateC):
+    def __init__(self,gcModel,linearizedModel,stateHandler,controllerHandler,toEvaluateC = True):
         self.gcModel = gcModel
         self.linearizedModel = linearizedModel
         self.stateHandler = stateHandler
         self.controllerHandler = controllerHandler
-        self.dofRobotStateSpace = dofRobotStateSpace
-        self.dofControl = dofControl
+        self.dofRobotStateSpace = 2*gcModel.dofConfigurationSpaceRobot
+        self.dofControl = gcModel.dofControl
         self.toEvaluateC = toEvaluateC
 
         self.lastUpdateQ = []
@@ -43,11 +43,3 @@ class LinearModelEvaluatorHandler():
 
     def getC(self):
         return self.c
-
-def getLinearModelEvaluatorHandler(generalizedCoordinatesModel,linearizedModel,stateHandler,controllerHandler, toEvaluateC = True):
-    dofRobotStateSpace = 2*generalizedCoordinatesModel.dofConfigurationSpaceRobot
-    dofControl = generalizedCoordinatesModel.dofControl
-
-    handler = LinearModelEvaluatorHandler(generalizedCoordinatesModel,linearizedModel,stateHandler,controllerHandler,
-                                          dofRobotStateSpace,dofControl,toEvaluateC)
-    return handler

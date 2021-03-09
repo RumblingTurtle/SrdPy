@@ -32,17 +32,14 @@ class ODESolverHandler():
         u = self.stateHandler.u
 
         ############# NOT FUNCTIONAL
-        ode15s = scipy.integrate.ode(self.odeFunc)
-        ode15s.set_integrator('vode', method='bdf', order=15, nsteps=3000)
-        ode15s.set_initial_value(0, t0)
+        #ode15s = scipy.integrate.ode(self.odeFunc)
+        #ode15s.set_integrator('vode', method='bdf', order=15, nsteps=3000)
+        #ode15s.set_initial_value(0, t0)
 
         #_, tape = scipy.integrate.ode(, [0, dt], [q0, v0])
 
 
-        self.stateHandler.q = tape[-1, 1:n]
-        self.stateHandler.v = tape[-1, n:2*n]
-        self.stateHandler.a = []
+        #self.stateHandler.q = tape[-1, 1:n]
+        #self.stateHandler.v = tape[-1, n:2*n]
+        #self.stateHandler.a = []
         ##########
-
-def getODESolverHandler(stateHandler,controllerHandler,gcModelHandler,simulationHandler):
-    return ODESolverHandler(stateHandler,controllerHandler,gcModelHandler,simulationHandler)

@@ -1,6 +1,7 @@
 class DesiredStateHandler():
-    def __init__(self,dofRobot,controlInputHandler,simulationHandler):
-        self.dofRobot = dofRobot
+    def __init__(self,controlInputHandler, simulationHandler):
+       
+        self.dofRobot = controlInputHandler.dofRobot
         self.controlInputHandler = controlInputHandler
         self.simulationHandler = simulationHandler
         self.q = []
@@ -13,7 +14,3 @@ class DesiredStateHandler():
 
     def getPositionVelocityAcceleration(self,t):
         return self.q,self.v,self.a
-
-
-def getDesiredStateHandler(controlInputHandler, simulationHandler):
-    return DesiredStateHandler(controlInputHandler.dofRobot,controlInputHandler,simulationHandler)

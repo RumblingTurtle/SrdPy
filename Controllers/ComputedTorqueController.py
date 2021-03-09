@@ -28,6 +28,3 @@ class ComputedTorqueController():
         u_FF = self.IKHandler.u
 
         self.u = u_FB + u_FF
-
-def getComputedTorqueController(stateHandler, controlInputHandler, gcModelHandler, simulationHandler, IKHandler,kP,kD):
-    return ComputedTorqueController(stateHandler, controlInputHandler, gcModelHandler, simulationHandler, IKHandler,kP,kD)

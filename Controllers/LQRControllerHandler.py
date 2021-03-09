@@ -31,8 +31,3 @@ class LQRControllerHandler():
         u_FF = self.IKHandler.u
 
         self.u = u_FB + u_FF
-
-def getLQRControllerHandler(stateSpaceHandler,controlInputStateSpaceHandler,
-                 linearizedModelHandler,simulationHandler,IKHandler,Q,R):
-    return LQRControllerHandler(stateSpaceHandler,controlInputStateSpaceHandler,
-                 linearizedModelHandler,simulationHandler,IKHandler,Q,R)

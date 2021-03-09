@@ -12,6 +12,3 @@ class StateConverterGenCoord2StateSpaceHandler():
     def update(self):
         self.x = vertcat(self.handlerState.q,self.handlerState.v)
         self.dx = vertcat(self.handlerState.v,self.handlerState.a)
-
-def getStateConverterGenCoord2StateSpaceHandler(handlerState):
-    return StateConverterGenCoord2StateSpaceHandler(handlerState)
