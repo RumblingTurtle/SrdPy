@@ -1,3 +1,5 @@
+from SrdPy.TableGenerators.generateConstraiedLinearModelTable import generateConstraiedLinearModelTable
+from SrdPy.TableGenerators.generateLinearModelTable import generateLinearModelTable
 from SrdPy.Handlers.getGCModelEvaluatorHandler import GCModelEvaluatorHandler
 from SrdPy.LinksAndJoints import *
 from SrdPy.Handlers import *
@@ -13,10 +15,11 @@ from SrdPy import plotGeneric
 from copy import deepcopy
 from casadi import *
 
+from SrdPy.TableGenerators import *
 from SrdPy import Chain
 import numpy as np
 
-def threeLinkExample():
+def tableBasedSimulation():
     groundLink = GroundLink()
 
     link1 = Link(name="Link1", order=1,
@@ -104,6 +107,7 @@ def threeLinkExample():
                                                                 functionName_TaskJacobianDerivative="g_Constraint_Jacobian_derivative",
                                                                 casadi_cCodeFilename="g_Constraints",
                                                                 path="./Constraints")
+                                                                
     handlerConstraints = getConstraintsModelHandlers(description_constraints, engine.dof)
 
     task = vertcat(vertcat(engine.q[0], engine.q[1]), constraint)
@@ -142,73 +146,35 @@ def threeLinkExample():
     timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
     IKTable = inverseKinematicsGenerateTable(IKModelHandler, handlerIK_taskSplines, initialPosition, timeTable)
 
-    inversekinematicsGenerateTableTester(IKModelHandler, timeTable, IKTable)
-
     IKSolutionHandler = getIKSolutionHandler(IKModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
-    stateHandler = getStateHandler(initialPosition, np.zeros(len(initialPosition)))
-    gcModelEvaluator = getGCModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, stateHandler)
-    linearModelEvaluator = getLinearModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, handlerLinearizedModel,
-                                                          stateHandler, [], False)
+    stateHandler = getStateHandler(initialPosition,np.zeros(initialPosition.shape))
 
-    dt = 0.001
+    timeHandler = TimeHandler()
+
+    desiredStateHandler = getDesiredStateHandler(IKSolutionHandler,timeHandler)
+
+
     tf = IKSolutionHandler.timeExpiration
 
-    simulationHandler = getSimulationHandler(np.arange(0, tf, dt))
+    n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 
-    desiredStateHandler = getDesiredStateHandler(IKSolutionHandler, simulationHandler)
+    A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,IKSolutionHandler,timeTable)
 
-    stateSpaceHandler = getStateConverterGenCoord2StateSpaceHandler(stateHandler)
+    N_table, G_table= generateConstraiedModelTable(handlerConstraints,x_table,[])
 
-    desiredStateSpaceHandler = getStateConverterGenCoord2StateSpaceHandler(desiredStateHandler)
+    Q = 100*np.eye(2 * n)
+    R = 0.01*np.eye(handlerGeneralizedCoordinatesModel.dofControl)
+    count = A_table.shape[2]
+    K_table = generateCLQRTable(A_table, B_table, np.matlib.repmat(Q, [1, 1, count]), np.matlib.repmat(R, [1, 1, count]), N_table)
 
-#    inverseDynamicsHandler = getIDVanillaDesiredTrajectoryHandler(desiredStateHandler, gcModelEvaluator,
-#                                                                  simulationHandler)
-    inverseDynamicsHandler = getInverseDynamicsConstrained_QR(
-                            desiredStateHandler,
-                            handlerConstraints,
-                            gcModelEvaluator,
-                            simulationHandler)
 
-    computedTorqueController = getComputedTorqueController(stateHandler, desiredStateHandler,
-                                                           gcModelEvaluator, simulationHandler, inverseDynamicsHandler,
-                                                           500 * np.eye(desiredStateHandler.dofRobot),
-                                                           100 * np.eye(desiredStateHandler.dofRobot))
-    
+    AA_table, cc_table = generateCloseLoopTable(A_table, B_table, c_table, K_table, x_table, u_table)
 
-                            
-#    LQRHandler = getLQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
-#                                         simulationHandler,
-#                                         inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
-#                                         np.eye(linearModelEvaluator.dofControl))
-    LQRHandler = getConstrainedLQRHandler(stateHandler,stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,handlerConstraints,
-                                         simulationHandler,
-                                         inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
-                                         np.eye(linearModelEvaluator.dofControl))
+    ode_fnc_handle = getClosedLoopLinearSystemOdeFunctionHandler(AA_table, cc_table, timeTable)
 
-    mainController = LQRHandler
 
-    linearModelEvaluator.controllerHandler = inverseDynamicsHandler
+    x0 = np.hstack(initialPosition, np.zeros(initialPosition.shape[0]))
 
-    taylorSolverHandler = getConstrainedTaylorSolverHandler(stateHandler, mainController, gcModelEvaluator, simulationHandler,handlerConstraints)
+    #time_table_0, solution_tape = ode45(ode_fnc_handle, [0, tf], x0)
 
-    stateHandlerLogger = getStateLoggerHandler(stateHandler, simulationHandler)
-
-    tickLogger = getProgressDisplayHandler(simulationHandler)
-
-    preprocessingHandlers = [desiredStateHandler, stateSpaceHandler, desiredStateSpaceHandler, gcModelEvaluator]
-    controllerHandlers = [inverseDynamicsHandler, linearModelEvaluator, LQRHandler]
-    solverHandlers = [taylorSolverHandler]
-    loggerHandlers = [stateHandlerLogger, tickLogger]
-
-    simulationHandler.preprocessingHandlersArray = preprocessingHandlers
-    simulationHandler.controllerArray = controllerHandlers
-    simulationHandler.solverArray = solverHandlers
-    simulationHandler.loggerArray = loggerHandlers
-
-    simulationHandler.simulate()
-
-    plotGeneric(simulationHandler.timeLog[:-1], stateHandlerLogger.q, figureTitle="Q", ylabel="q")
-    plotGeneric(simulationHandler.timeLog[:-1], stateHandlerLogger.v, figureTitle="V", ylabel="v")
-    vis = Visualizer()
-    vis.animate(blank_chain,stateHandlerLogger.q,framerate=0.1)

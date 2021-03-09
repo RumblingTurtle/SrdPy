@@ -10,3 +10,6 @@ from SrdPy.Handlers.getSimulationHandler import getSimulationHandler
 from SrdPy.Handlers.getDesiredStateHandler import getDesiredStateHandler
 from SrdPy.Handlers.getStateConverterGenCoord2StateSpaceHandler import getStateConverterGenCoord2StateSpaceHandler
 from SrdPy.Handlers.Handler import Handler
+from SrdPy.Handlers.TimeHandler import TimeHandler
+from SrdPy.Handlers.getClosedLoopLinearSystemOdeFunctionHandler import getClosedLoopLinearSystemOdeFunctionHandler
+from SrdPy.Handlers.getLinearizedModelOdeFunctionHandler import getLinearizedModelOdeFunctionHandler

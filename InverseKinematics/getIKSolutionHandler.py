@@ -16,11 +16,11 @@ class IKSolutionHandler():
         a = interpolate.interp1d(x=self.timeTable,y=self.IKTable[:,0],kind=self.method)(t)
         b = interpolate.interp1d(x=self.timeTable, y=self.IKTable[:, 1], kind=self.method)(t)
         c = interpolate.interp1d(x=self.timeTable, y=self.IKTable[:, 2], kind=self.method)(t)
-        return a,b,c
+        return np.array([a,b,c])
 
 
     def getPositionVelocityAcceleration(self,t):
-        q = self.getPosition(t)
+        q = self.getPosition(t).T
 
         task_v = self.IKTaskHandler.getDerivative(t)
         task_a = self.IKTaskHandler.getTaskSecondDerivative(t)
@@ -34,12 +34,13 @@ class IKSolutionHandler():
         jVCat = vertcat(jHCat,horzcat(dJ,J))
         taskCat = np.vstack((task_v, task_a))
 
-        res = pinv(jVCat) @ taskCat
+        res = np.array(DM(pinv(jVCat) @ taskCat))
 
+        res = np.reshape(res,(2*self.IKModelHandler.dofRobot))
         v = res[:self.IKModelHandler.dofRobot]
         a = res[self.IKModelHandler.dofRobot:]
 
-        return [q, v, a]
+        return q, v, a
 
 def getIKSolutionHandler(IKModelHandler,IKTaskHandler,timeTable,IKTable,method="linear"):
     return IKSolutionHandler(IKModelHandler,IKTaskHandler,timeTable,IKTable,method)
