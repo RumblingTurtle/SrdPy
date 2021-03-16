@@ -8,7 +8,7 @@ def generateConstraiedModelTable(constraintsModel, x_table,new_dimensions):
     if len(new_dimensions)!=0:
         nn = new_dimensions
     else:
-        nn = n - k
+        nn = n - 2*k
 
     N_table = np.zeros((count,n, nn))
     G_table = np.zeros((count,2*k, n))

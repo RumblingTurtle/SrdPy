@@ -17,6 +17,8 @@ from casadi import *
 from SrdPy.TableGenerators import *
 from SrdPy import Chain
 import numpy as np
+from scipy.integrate import solve_ivp
+
 
 def tableBasedSimulation():
     groundLink = GroundLink()
@@ -51,6 +53,7 @@ def tableBasedSimulation():
                                defaultJointOrientation=np.eye(3))
 
     initialPosition = np.array([np.pi / 4, -2 * np.pi / 3, 1 * np.pi / 5])
+    
     linkArray = [groundLink, link1, link2, link3]
 
     chain =Chain(linkArray)
@@ -83,7 +86,7 @@ def tableBasedSimulation():
                                                                               casadi_cCodeFilename="g_dynamics_generalized_coordinates",
                                                                               path="./Dynamics")
 
-    handlerGeneralizedCoordinatesModel = getGeneralizedCoordinatesModelHandlers(description_gen_coord_model)
+    handlerGeneralizedCoordinatesModel = GeneralizedCoordinatesModelHandler(description_gen_coord_model)
 
     description_linearization = generateDynamicsLinearization(engine,
                                                               H=H,
@@ -95,7 +98,7 @@ def tableBasedSimulation():
                                                               casadi_cCodeFilename="g_dynamics_linearization",
                                                               path="./Linearization")
                                                               
-    handlerLinearizedModel = getLinearizedModelHandlers(description_linearization)
+    handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
     constraint = engine.linkArray[3].absoluteFollower[0][2]
 
@@ -107,7 +110,7 @@ def tableBasedSimulation():
                                                                 casadi_cCodeFilename="g_Constraints",
                                                                 path="./Constraints")
                                                                 
-    handlerConstraints = getConstraintsModelHandlers(description_constraints, engine.dof)
+    handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof)
 
     task = vertcat(vertcat(engine.q[0], engine.q[1]), constraint)
 
@@ -119,8 +122,8 @@ def tableBasedSimulation():
                                                        casadi_cCodeFilename="g_InverseKinematics",
                                                        path="./InverseKinematics")
 
-    IKModelHandler = getIKModelHandler(description_IK, engine.dof, task.shape[0])
-    IC_task = IKModelHandler.getTask(initialPosition)
+    ikModelHandler = IKModelHandler(description_IK, engine.dof, task.shape[0])
+    IC_task = ikModelHandler.getTask(initialPosition)
 
     zeroOrderDerivativeNodes = [[IC_task[0], IC_task[0] - 0.15],
                                 [IC_task[1], IC_task[1] + 0.15 ],
@@ -138,42 +141,45 @@ def tableBasedSimulation():
     timeEnd = (len(zeroOrderDerivativeNodes[1]) - 1) * timeOfOneStage + 1
     nodeTimes = np.arange(start=0, stop=timeEnd, step=timeOfOneStage)
 
-    handlerIK_taskSplines = getIKtaskSplinesHandler(nodeTimes,
+    handlerIK_taskSplines = IKtaskSplinesHandler(nodeTimes,
                                                     zeroOrderDerivativeNodes, firstOrderDerivativeNodes,
                                                     secondOrderDerivativeNodes)
 
     timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
-    IKTable = inverseKinematicsGenerateTable(IKModelHandler, handlerIK_taskSplines, initialPosition, timeTable)
+    IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable)
 
-    IKSolutionHandler = getIKSolutionHandler(IKModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
+    ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
-    stateHandler = getStateHandler(initialPosition,np.zeros(initialPosition.shape))
+    stateHandler = StateHandler(initialPosition,np.zeros(initialPosition.shape))
 
     timeHandler = TimeHandler()
 
-    desiredStateHandler = getDesiredStateHandler(IKSolutionHandler,timeHandler)
+    desiredStateHandler = DesiredStateHandler(ikSolutionHandler,timeHandler)
 
 
-    tf = IKSolutionHandler.timeExpiration
+    tf = ikSolutionHandler.timeExpiration
 
     n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 
-    A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,IKSolutionHandler,timeTable)
+    A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,ikSolutionHandler,timeTable)
 
     N_table, G_table= generateConstraiedModelTable(handlerConstraints,x_table,[])
 
     Q = 100*np.eye(2 * n)
     R = 0.01*np.eye(handlerGeneralizedCoordinatesModel.dofControl)
-    count = A_table.shape[2]
-    K_table = generateCLQRTable(A_table, B_table, np.matlib.repmat(Q, [1, 1, count]), np.matlib.repmat(R, [1, 1, count]), N_table)
+    count = A_table.shape[0]
+    K_table = generateLQRTable(A_table, B_table, np.tile(Q, [count,1, 1]), np.tile(R, [ count, 1, 1]))
 
 
     AA_table, cc_table = generateCloseLoopTable(A_table, B_table, c_table, K_table, x_table, u_table)
 
-    ode_fnc_handle = getClosedLoopLinearSystemOdeFunctionHandler(AA_table, cc_table, timeTable)
+    ode_fnc_handle = ClosedLoopLinearSystemOdeFunctionHandler(AA_table, cc_table, timeTable)
 
+    x0 = np.hstack((initialPosition, np.zeros(initialPosition.shape[0])))
 
-    x0 = np.hstack(initialPosition, np.zeros(initialPosition.shape[0]))
+    sol = solve_ivp(ode_fnc_handle, [0, tf], x0)
+    time_table_0 = sol.t
+    solution_tape = sol.y.T
 
-    #time_table_0, solution_tape = ode45(ode_fnc_handle, [0, tf], x0)
-
+    ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE")
+    ax = plotGeneric(timeTable,x_table,ylabel="linearmodel",old_ax = ax, plot=True)

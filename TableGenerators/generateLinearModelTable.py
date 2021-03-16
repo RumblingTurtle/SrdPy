@@ -26,7 +26,7 @@ def generateLinearModelTable(gcModelHandler,linearizedModelHandler,IKSolutionHan
         
         u = np.linalg.pinv(T)@(H@a + c)
         
-        A_table[i]= linearizedModelHandler.getA(q, v, u, iH)
+        A_table[i]= linearizedModelHandler.getA(q, v, u, iH).T
         B_table[i]= linearizedModelHandler.getB(q, u, iH).T
             
         x_table[i] = np.hstack((q, v))
