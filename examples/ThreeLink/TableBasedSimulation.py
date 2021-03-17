@@ -1,5 +1,5 @@
-from SrdPy.TableGenerators.generateConstraiedLinearModelTable import generateConstraiedLinearModelTable
-from SrdPy.TableGenerators.generateLinearModelTable import generateLinearModelTable
+from SrdPy.TableGenerators import generateConstraiedLinearModelTable
+from SrdPy.TableGenerators import generateLinearModelTable
 from SrdPy.LinksAndJoints import *
 from SrdPy.Handlers import *
 from SrdPy.InverseKinematics import *

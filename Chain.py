@@ -27,6 +27,16 @@ class Chain:
                 vertices.append(followerCoord)
         return np.array(vertices)
 
+    def getCoM(self):
+        CoM = np.zeros((3,1))
+        mass = 0
+
+        for link in self.linkArray:
+            CoM  = CoM + link.absoluteCoM*link.mass
+            mass = mass + link.mass
+        
+        return CoM/mass
+
     def __str__(self):
         out_str = self.name+"\n"
         out_str = out_str+"Links: \n"

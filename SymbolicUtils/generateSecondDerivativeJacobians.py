@@ -21,7 +21,7 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
         print("Loaded existing .so at "+path)
         return modelDict
         
-    dofTask = task.size()[0]
+    dofTask = task.shape[0]
     taskJacobian = jacobian(task,symbolicEngine.q)
     taskJacobianDerivative = jacobian(taskJacobian,symbolicEngine.q)@symbolicEngine.v
     taskJacobianDerivative = reshape(taskJacobianDerivative, taskJacobian.shape)

@@ -61,7 +61,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
                 meshPath = os.path.join(os.path.dirname(os.path.abspath(path)),meshRelativePath)
                 if meshRelativePath[-3:]=="obj":
                     meshObj = G.ObjMeshGeometry.from_file(meshPath)
-                elif meshRelativePath[-3:] == "stl":
+                elif meshRelativePath[-3:].lower() == "stl":
                     meshObj = G.StlMeshGeometry.from_file(meshPath)
                 else:
                     meshObj = None
