@@ -1,5 +1,14 @@
 import numpy as np
-import scipy
+from numpy.linalg import svd
+
+def nullspace(A, atol=1e-13, rtol=0):
+    A = np.atleast_2d(A)
+    u, s, vh = svd(A)
+    tol = max(atol, rtol * s[0])
+    nnz = (s >= tol).sum()
+    ns = vh[nnz:].conj().T
+    return ns
+    
 def generateConstraiedModelTable(constraintsModel, x_table,new_dimensions):
     count = x_table.shape[0]
     n = x_table.shape[1]
@@ -26,7 +35,7 @@ def generateConstraiedModelTable(constraintsModel, x_table,new_dimensions):
 
         G = np.vstack((Fstack,np.hstack((F, dFdq))))
         
-        N =  scipy.linalg.null_space(G)
+        N =  nullspace(G)
         
         G_table[i] = G
         N_table[i] = N

@@ -50,7 +50,8 @@ def threeLinkExample():
     initialPosition = np.array([np.pi / 4, -2 * np.pi / 3, 1 * np.pi / 5])
     linkArray = [groundLink, link1, link2, link3]
 
-    chain =Chain(linkArray)
+    chain = Chain(linkArray)
+    
     chain.name = "Three link chain"
     
     blank_chain = deepcopy(chain)

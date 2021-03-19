@@ -25,9 +25,13 @@ import os
 def tableBasedSimulation():
     cheetahLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/cheetah/cheetah/urdf/cheetah.urdf"),True)
     cheetahChain = Chain(cheetahLinks)
-    
-    initialPosition = np.zeros(12)
-    cheetahChain.update(initialPosition)
+
+
+    print(cheetahChain)
+    initialPosition = np.zeros(18)
+
+    blank_chain = deepcopy(cheetahChain)
+    blank_chain.update(initialPosition)
 
     engine = SymbolicEngine(cheetahChain.linkArray)
 
@@ -64,11 +68,11 @@ def tableBasedSimulation():
                                                               
     handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
-    constraint1 = engine.linkArray[4].absoluteFollower
-    constraint2 = engine.linkArray[8].absoluteFollower
-    constraint3 = engine.linkArray[12].absoluteFollower
+    constraint1 = np.squeeze(engine.linkArray[11].absoluteFollower)
+    constraint2 = np.squeeze(engine.linkArray[13].absoluteFollower)
+    constraint3 = np.squeeze(engine.linkArray[10].absoluteFollower)
     
-    constraint = np.vstack((constraint1,constraint2))
+    constraint = np.hstack((constraint1,constraint2))
 
     description_constraints = generateSecondDerivativeJacobians(engine,
                                                                 task=constraint,
@@ -82,7 +86,7 @@ def tableBasedSimulation():
     
     CoM = cheetahChain.getCoM()
 
-    task = np.vstack((constraint3, CoM))
+    task = np.hstack((constraint3, CoM))
 
     description_IK = generateSecondDerivativeJacobians(engine,
                                                     task=task,
@@ -133,18 +137,41 @@ def tableBasedSimulation():
     timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
 
     IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable)
-    plotIKTable(ikModelHandler, timeTable, IKTable)
+    #plotIKTable(ikModelHandler, timeTable, IKTable)
 
-""" 
-    SRD_InverseKinematics_GenerateTable_tester(...
-        'Handler_IK_Model', Handler_IK_Model, ...
-        'TimeTable', TimeTable, ...
-        'IK_Table', IK_Table);
+    ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
-    Handler_IK_Solution = SRD_get_handler__IK_solution__interp1(...
-        'Handler_IK_Model_name', 'Handler_IK_Model', ...
-        'Handler_IK_task_name', 'Handler_IK_task', ...
-        'IK_Table', IK_Table, ...
-        'TimeTable', TimeTable, ...
-        'method', 'linear');%linear', 'nearest', 'next', 'previous', 'pchip', 'cubic', 'v5cubic', 'makima', or 'spline'
- """
+    timeHandler = TimeHandler()
+
+    tf = ikSolutionHandler.timeExpiration
+
+    n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
+
+    A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,ikSolutionHandler,timeTable)
+
+    N_table, G_table= generateConstraiedModelTable(handlerConstraints,x_table,[])
+
+    Q = 100*np.eye(2 * n)
+    R = 0.01*np.eye(handlerGeneralizedCoordinatesModel.dofControl)
+    count = A_table.shape[0]
+    K_table = generateLQRTable(A_table, B_table, np.tile(Q, [count,1, 1]), np.tile(R, [ count, 1, 1]))
+
+
+    AA_table, cc_table = generateCloseLoopTable(A_table, B_table, c_table, K_table, x_table, u_table)
+
+    ode_fnc_handle = ClosedLoopLinearSystemOdeFunctionHandler(AA_table, cc_table, timeTable)
+
+    x0 = np.hstack((initialPosition, np.zeros(initialPosition.shape[0])))
+
+    sol = solve_ivp(ode_fnc_handle, [0, tf], x0, t_eval=timeTable)
+    time_table_0 = sol.t
+    solution_tape = sol.y.T
+
+    #ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE")
+    #ax = plotGeneric(timeTable,x_table,ylabel="linearmodel",old_ax = ax, plot=True)
+
+    ax = plotGeneric(timeTable,solution_tape[:,1:n],figureTitle="position",ylabel="q", plot=True)
+    ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel="v", plot=True)
+
+    with open('anim_array.npy', 'wb') as f:
+        np.save(f, solution_tape[:,1:n+1])

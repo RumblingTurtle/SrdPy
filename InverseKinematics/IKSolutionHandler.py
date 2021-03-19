@@ -13,10 +13,11 @@ class IKSolutionHandler():
         self.timeExpiration = min(self.IKModelHandler.timeExpiration,self.IKTaskHandler.timeExpiration)
 
     def getPosition(self,t):
-        a = interpolate.interp1d(x=self.timeTable,y=self.IKTable[:,0],kind=self.method)(t)
-        b = interpolate.interp1d(x=self.timeTable, y=self.IKTable[:, 1], kind=self.method)(t)
-        c = interpolate.interp1d(x=self.timeTable, y=self.IKTable[:, 2], kind=self.method)(t)
-        return np.array([a,b,c])
+        result = []
+        for i in range(self.IKTable.shape[1]):
+            a = interpolate.interp1d(x=self.timeTable,y=self.IKTable[:,i],kind=self.method)(t)
+            result.append(a)
+        return np.array(result)
 
 
     def getPositionVelocityAcceleration(self,t):

@@ -18,7 +18,7 @@ class JointFloatingBaseEuler_XYZ(Joint):
         Ty = SrdMath.rotationMatrix3Dy(q[1])
         Tz = SrdMath.rotationMatrix3Dz(q[2])
 
-        self.childLink.relativeOrientation =  Tz@Ty@Tx
+        self.childLink.relativeOrientation =  np.array(Tz)@Ty@Tx
 
         self.childLink.absoluteBase = [q[3],q[4],q[5]]
         self.childLink.absoluteOrientation = self.parentLink.absoluteOrientation@self.childLink.relativeOrientation

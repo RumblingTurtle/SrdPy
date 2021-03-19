@@ -4,6 +4,15 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="cheetah">
+
+    <link name="ground"></link>
+    <joint name="ground_t_floating" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="ground"/>
+    <child link="trunk"/>
+    <limit effort="20" lower="-0.872664625997" upper="1.0471975512" velocity="10.6"/>
+    </joint>
+
   <link name="trunk">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -25,13 +34,6 @@
       <inertia ixx="0.011253" ixy="0" ixz="0.0" iyy="0.036203" iyz="-0.0" izz="0.042673"/>
     </inertial>
   </link>
-  <joint name="trunk_to_trunk_inertia_floating" type="revolute">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-    <parent link="trunk"/>
-    <child link="trunk_interia"/>
-      <limit effort="20" lower="-0.872664625997" upper="1.0471975512" velocity="10.6"/>
-  </joint>
-
 
   <joint name="RL_hip_joint" type="revolute">
     <origin rpy="0 0 0" xyz="-0.196 0.049664 0"/>

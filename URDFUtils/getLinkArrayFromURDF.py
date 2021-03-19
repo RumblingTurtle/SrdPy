@@ -9,16 +9,18 @@ def getInertiaMatrixFromValues(ixx,ixy,ixz,iyy,iyz,izz):
     return np.array([[ixx,ixy,ixz],[ixy,iyy,iyz],[ixz,iyz,izz]])
 
 def getJointClass(joint):
+    if joint.name.split("_")[-1]=="floating":
+        return JointFloatingBaseEuler_XYZ
 
-   if joint.type == "revolute":
-       if joint.axis[0]>0:
-           return JointPivotX
-       if joint.axis[1] > 0:
-           return JointPivotY
-       if joint.axis[2] > 0:
-           return JointPivotZ
+    if joint.type == "revolute":
+        if joint.axis[0]>0:
+            return JointPivotX
+        if joint.axis[1] > 0:
+            return JointPivotY
+        if joint.axis[2] > 0:
+            return JointPivotZ
 
-   if joint.type == "fixed":
+    if joint.type == "fixed":
         return JointFixed
 
 
@@ -31,15 +33,20 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
     jointArray = []
     order = -1 
     
-        
+    
+    root_link = robot.get_root()
     newLink = GroundLink()
-    linkDict["Ground"] = newLink
+    linkDict[root_link] = newLink
     linkArray.append(newLink)
     
     linkParserMap={}
     print("Parsing URDF:"+path)
-    print("Root node: "+robot.get_root())
+    print("Root node: "+root_link)
     for link in robot.links:
+        if link.name == robot.get_root():
+            linkParserMap[link.name] = (linkDict[root_link],link)
+            continue
+        
         if link.inertial==None:
             continue
 
@@ -99,10 +106,5 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
 
         coordIndex=coordIndex+jointUsedCoords
         jointArray.append(newJoint)
-    
-    rootJoint = JointFixed(name="RootToGround", childLink=linkDict[robot.get_root()], parentLink=linkArray[0], parentFollowerNumber=0,
-                            usedGeneralizedCoordinates=[], usedControlInputs=[],
-                            defaultJointOrientation=np.eye(3))
-    linkArray[0].addFollower([0,0,0])
-    jointArray.append(rootJoint)
+
     return linkArray

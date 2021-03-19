@@ -7,12 +7,12 @@ class ClosedLoopLinearSystemOdeFunctionHandler:
         self.time_table = time_table
 
     def __call__(self,t,x):
-        closest_index = np.argwhere(np.array(self.time_table)<=t)[-1]
+        closest_index = np.abs(self.time_table - t).argmin()
+
         if closest_index>=self.AA_table.shape[0]:
             return np.zeros(self.cc_table.shape[1])
 
         AA = self.AA_table[closest_index]
         cc = self.cc_table[closest_index]
         
-        result = np.squeeze(AA)@np.squeeze(x) + cc
-        return result
+        return np.squeeze(AA)@np.squeeze(x) + cc

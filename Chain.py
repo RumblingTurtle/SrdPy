@@ -28,7 +28,7 @@ class Chain:
         return np.array(vertices)
 
     def getCoM(self):
-        CoM = np.zeros((3,1))
+        CoM = np.zeros(3)
         mass = 0
 
         for link in self.linkArray:
