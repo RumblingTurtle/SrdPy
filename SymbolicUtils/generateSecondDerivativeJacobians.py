@@ -9,13 +9,13 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
                                     functionName_TaskJacobian,
                                     functionName_TaskJacobianDerivative,
                                     casadi_cCodeFilename,
-                                    path):
+                                    path,recalculate=True):
 
     
     pathFolder = os.path.basename(path)
     picklePath = os.path.join(path,pathFolder+".pkl")
     
-    if os.path.exists(picklePath):
+    if os.path.exists(picklePath) and not recalculate:
         with open(picklePath, 'rb') as f:
             modelDict = pickle.load(f)
         print("Loaded existing .so at "+path)

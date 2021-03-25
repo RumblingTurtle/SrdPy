@@ -1,3 +1,4 @@
+from SrdPy.InverseKinematics.inversePositionProblemSolver_quadprog import inversePositionProblemSolver_quadprog
 from SrdPy.InverseKinematics.inversePositionProblemSolver_lsqnonlin import inversePositionProblemSolver_lsqnonlin
 from SrdPy.InverseKinematics.generateIKTable import generateIKTable
 from SrdPy.InverseKinematics.plotIKTable import plotIKTable

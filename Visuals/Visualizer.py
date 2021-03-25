@@ -79,7 +79,6 @@ class Visualizer:
                 boxVis.set_transform(tf.translation_matrix(link.absoluteBase)@rotationMatrix)
 
             for i in range(len(states)):
-                print(i)
                 chain.update(states[i])
                 with anim.at_frame(vis, framerate*i) as frame:
                         for i,link in enumerate(chain.linkArray):

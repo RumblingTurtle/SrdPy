@@ -7,7 +7,7 @@
 
     <link name="ground"></link>
     <joint name="ground_t_floating" type="revolute">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0 0 0.45"/>
     <parent link="ground"/>
     <child link="trunk"/>
     <limit effort="20" lower="-0.872664625997" upper="1.0471975512" velocity="10.6"/>

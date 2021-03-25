@@ -6,7 +6,7 @@ class GroundLink(Link):
         self.order = 0
         self.name = 'Ground'
         self.relativeBase = np.array([0,0,0])
-        self.relativeFollower= np.array([[0,0,0]])
+        self.relativeFollower= np.array([])
         self.relativeCoM = np.array([0,0,0])
         self.absoluteCoM = np.array([0, 0, 0])
         self.mass = 0
@@ -23,8 +23,13 @@ class GroundLink(Link):
         self.absoluteOrientationDerivative = np.zeros(3)
         self.angularVelocity = np.array([0,0,0])
         self.meshObj = None
+
     def addFollower(self,follower):
-        pass
+        if self.relativeFollower.shape[0]==0:
+            self.relativeFollower = np.array([follower])
+        else:
+            self.relativeFollower = np.vstack((self.relativeFollower,follower))
+        self.absoluteFollower = self.relativeFollower
 
     def update(self,q):
         pass

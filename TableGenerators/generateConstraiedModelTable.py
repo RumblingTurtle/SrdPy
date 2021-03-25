@@ -9,7 +9,7 @@ def nullspace(A, atol=1e-13, rtol=0):
     ns = vh[nnz:].conj().T
     return ns
     
-def generateConstraiedModelTable(constraintsModel, x_table,new_dimensions):
+def generateConstraiedModelTable(constraintsModel, gcModelHandler, x_table,new_dimensions):
     count = x_table.shape[0]
     n = x_table.shape[1]
     k = constraintsModel.dofConstraint
@@ -21,23 +21,27 @@ def generateConstraiedModelTable(constraintsModel, x_table,new_dimensions):
 
     N_table = np.zeros((count,n, nn))
     G_table = np.zeros((count,2*k, n))
-
+    F_table = np.zeros((count,n, k))
+    
     for i in range(count):
         
         x = x_table[i]
         q = np.reshape(x[:int(n/2)],(int(n/2),1))
         v = np.reshape(x[int(n/2):],(int(n/2),1))
         
+        iH = gcModelHandler.getJointSpaceInertiaMatrixInverse(q)
+
         F = constraintsModel.getJacobian(q)
         dFdq = constraintsModel.getJacobianDerivative(q, v)
         
         Fstack = np.hstack((np.zeros((k, int(n/2))), F))
-
         G = np.vstack((Fstack,np.hstack((F, dFdq))))
         
         N =  nullspace(G)
         
+
         G_table[i] = G
         N_table[i] = N
+        F_table[i] = np.vstack((np.zeros((int(n/2),k)),iH@F.T))
 
-    return N_table, G_table
+    return N_table, G_table, F_table

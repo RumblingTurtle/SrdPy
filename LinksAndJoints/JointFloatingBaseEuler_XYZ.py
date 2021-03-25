@@ -20,7 +20,7 @@ class JointFloatingBaseEuler_XYZ(Joint):
 
         self.childLink.relativeOrientation =  np.array(Tz)@Ty@Tx
 
-        self.childLink.absoluteBase = [q[3],q[4],q[5]]
+        self.childLink.absoluteBase = self.parentLink.absoluteFollower[self.parentFollowerNumber]+np.array([q[3],q[4],q[5]])
         self.childLink.absoluteOrientation = self.parentLink.absoluteOrientation@self.childLink.relativeOrientation
       
         rBaseToFollower = self.childLink.relativeFollower - np.matlib.repmat(self.childLink.relativeBase,self.childLink.relativeFollower.shape[0],1)

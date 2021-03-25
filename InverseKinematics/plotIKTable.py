@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from SrdPy import plotGeneric
 def plotIKTable(IKModelHandler,timeTable,IKTable,tol=10**(-5)):
     count = len(timeTable)
 
@@ -14,17 +15,8 @@ def plotIKTable(IKModelHandler,timeTable,IKTable,tol=10**(-5)):
         condition_number_tape[i] = np.linalg.cond(J)
         rank_tape[i] = np.linalg.matrix_rank(J, tol)
 
-    fig, ax = plt.subplots(1, 1)
-    ax.plot(timeTable,IKTable[:,0],'r',label=r'$q_1$')
-    ax.plot(timeTable,IKTable[:,1],'b',label=r'$q_2$')
-    ax.plot(timeTable,IKTable[:,2],'g--',label=r'$q_3$')
-    ax.legend(loc='upper right')
-
-    ax.set_xlabel(r'$t, s$', fontsize=15)
-    ax.set_ylabel(r'$q_i$', fontsize=15)
-    ax.set_title(r'IK Solution', fontsize=18)
-
-    ax.grid(color='k', linestyle='-', linewidth=0.15)
+    ax = plotGeneric(timeTable,IKTable,figureTitle='IK Solution',ylabel="q")
+    
     fig, ax = plt.subplots(2)
     ax[0].plot(timeTable,condition_number_tape,'r',label=r'$cond_1$')
     ax[0].legend(loc='upper right')

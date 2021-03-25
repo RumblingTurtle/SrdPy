@@ -1,2 +1,3 @@
-from SrdPy.Tests.getThreeLinkChain import getThreeLinkChain
-from SrdPy.Tests.ThreeLinkTests import ThreeLinkTests
+from SrdPy.Tests.TestSuite import TestSuite
+from SrdPy.Tests.ThreeLink import *
+from SrdPy.Tests.Cheetah import *

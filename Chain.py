@@ -10,12 +10,15 @@ class Chain:
         self.jointArray = []
         generalizedCoordinates = []
         controlInputs = []
+        self.links = {}
+        
         for link in self.linkArray:
             if link.joint!=None:
                 self.jointArray.append(link.joint)
                 if len(link.joint.usedGeneralizedCoordinates) != 0:
                     generalizedCoordinates = np.concatenate([generalizedCoordinates,link.joint.usedGeneralizedCoordinates])
                     controlInputs = np.concatenate([controlInputs,link.joint.usedControlInputs])
+            self.links[link.name] = link
         self.dof = len(generalizedCoordinates)
         self.controlDof = len(controlInputs)
 
