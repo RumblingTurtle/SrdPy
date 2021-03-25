@@ -9,10 +9,14 @@ class ConstraintsModelHandler:
         handler = namedtuple("GeneralizedCoordinatesModelHandler", fields)
 
         dofRobot = dofRobot
-
-        self.constraintHandler = external(description["functionName_Task"], so_path)
-        self.jacobianHandler = external(description["functionName_TaskJacobian"], so_path)
-        self.jacobianDerivativeHandler = external(description["functionName_TaskJacobianDerivative"], so_path)
+        if description["useJIT"]:
+            imp = Importer(description["path"] + "/" +description["casadi_cCodeFilename"]+".c","clang")
+        else:
+            imp = so_path
+            
+        self.constraintHandler = external(description["functionName_Task"], imp)
+        self.jacobianHandler = external(description["functionName_TaskJacobian"], imp)
+        self.jacobianDerivativeHandler = external(description["functionName_TaskJacobianDerivative"], imp)
         self.dofConstraint = description["dofTask"]
 
     def getConstraint(self,**args):

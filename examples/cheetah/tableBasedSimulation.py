@@ -67,11 +67,14 @@ def tableBasedSimulation():
                                                               
     handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
-    constraint1 = np.squeeze(engine.links["FL_calf"].absoluteFollower)
-    constraint2 = np.squeeze(engine.links["FR_calf"].absoluteFollower)
-    constraint3 = np.squeeze(engine.links["RL_calf"].absoluteFollower)
 
-    constraint = np.hstack([constraint1,constraint2])
+    constraint1 = engine.links["FR_calf"].absoluteFollower[0]
+    constraint2 = engine.links["RL_calf"].absoluteFollower[0]
+    constraint3 = engine.links["RR_calf"].absoluteFollower[0]
+
+
+    constraint = np.hstack([constraint1, constraint2])
+    print("constraint size is: ", constraint.size)
 
     description_constraints = generateSecondDerivativeJacobians(engine,
                                                                 task=constraint,
@@ -80,12 +83,16 @@ def tableBasedSimulation():
                                                                 functionName_TaskJacobianDerivative="g_Constraint_Jacobian_derivative",
                                                                 casadi_cCodeFilename="g_Constraints",
                                                                 path="./cheetah/Constraints")
-                                                                
-    handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof)
-    
-    CoM = cheetahChain.getCoM()
 
-    task = np.hstack([constraint3,CoM])
+    handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof)
+
+    CoM = cheetahChain.getCoM()
+    foot = engine.links["FL_calf"].absoluteFollower[0]
+    orientation = engine.links["trunk"].absoluteOrientation
+    orientation = orientation.reshape(9)
+
+    task = np.hstack([CoM, foot, orientation, constraint])
+    print("task size is: ", task.size)
 
 
     description_IK = generateSecondDerivativeJacobians(engine,
@@ -100,7 +107,15 @@ def tableBasedSimulation():
 
     IC_task = ikModelHandler.getTask(initialPosition)
 
-    ikOffset = [ 0.4, 0.4, 0.3, 0.4,0.5,0.0]
+    
+    ikOffset = np.zeros(IC_task.shape[0])
+    ikOffset[0] = 0.00
+    ikOffset[1] = 0.00
+    ikOffset[2] = 0.00
+    ikOffset[3] = 0.03
+    ikOffset[4] = 0.03
+    ikOffset[5] = 0.03
+
 
     zeroOrderDerivativeNodes = np.hstack((IC_task,IC_task+ikOffset))
 
@@ -122,7 +137,7 @@ def tableBasedSimulation():
    
     timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
 
-    IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
+    IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="quadprog")
     plotIKTable(ikModelHandler, timeTable, IKTable)
     
 
