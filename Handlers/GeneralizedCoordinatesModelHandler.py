@@ -17,10 +17,10 @@ class GeneralizedCoordinatesModelHandler():
         return self.getJointSpaceInertiaMatrixHandler(DM(q))
 
     def getJointSpaceInertiaMatrixInverse(self, q):
-        H = self.getJointSpaceInertiaMatrixHandler(DM(q))
+        H = np.array(self.getJointSpaceInertiaMatrixHandler(DM(q)))
 
         if self.usePinv:
-            return DM(pinv(H))
+            return np.linalg.pinv(H)
         else:
             return np.linalg.solve(H,np.eye(H.shape[0]))
 
@@ -28,4 +28,4 @@ class GeneralizedCoordinatesModelHandler():
         return DM(self.getBiasVectorHandler(DM(q),DM(v)))
 
     def getControlMap(self, q):
-        return DM(self.getControlMapHandler(DM(q)))
+        return np.array(self.getControlMapHandler(DM(q)))

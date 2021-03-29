@@ -20,7 +20,7 @@ class IKModelHandler(Handler):
         self.dofRobot = dofRobot
         self.dofTask = dofTask
 
-
+ 
     def getTask(self, q):
         return self.taskHandler(q)
 

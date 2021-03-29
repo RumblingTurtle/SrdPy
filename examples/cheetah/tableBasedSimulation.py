@@ -18,11 +18,13 @@ from casadi import *
 
 from SrdPy.TableGenerators import *
 from SrdPy import Chain
+from SrdPy import Profiler
 import numpy as np
 from scipy.integrate import solve_ivp
 import os
 
 def tableBasedSimulation():
+    p = Profiler()
     cheetahLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/cheetah/cheetah/urdf/cheetah.urdf"),True)
     cheetahChain = Chain(cheetahLinks)
 
@@ -138,7 +140,7 @@ def tableBasedSimulation():
     timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
 
     IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="quadprog")
-    plotIKTable(ikModelHandler, timeTable, IKTable)
+    #plotIKTable(ikModelHandler, timeTable, IKTable)
     
 
     ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
@@ -147,11 +149,10 @@ def tableBasedSimulation():
 
     n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 
-    #Slow
     A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,ikSolutionHandler,timeTable)
 
     N_table, G_table, F_table = generateConstraiedModelTable(handlerConstraints,handlerGeneralizedCoordinatesModel,x_table,[])
-
+    print(p.getReport())
     Q = 100*np.eye(2 * n)
     R = 0.01*np.eye(handlerGeneralizedCoordinatesModel.dofControl)
     count = A_table.shape[0]
