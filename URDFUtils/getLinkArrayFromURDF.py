@@ -33,7 +33,6 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
     jointArray = []
     order = -1 
     
-    
     root_link = robot.get_root()
     newLink = GroundLink()
     linkDict[root_link] = newLink
@@ -43,6 +42,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
     print("Parsing URDF:"+path)
     print("Root node: "+root_link)
     for link in robot.links:
+
         if link.name == robot.get_root():
             linkParserMap[link.name] = (linkDict[root_link],link)
             continue
@@ -62,6 +62,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
         newLink = Link(name=name,order=order,
                         inertia=inertiaMatrix, mass=mass,
                         relativeBase=[0, 0, 0], relativeFollower=[], relativeCoM=relativeCOM)
+
         if parseMeshses and link.visual!=None:
             if isinstance(link.visual.geometry,urdf_parser_py.urdf.Mesh):
                 meshRelativePath = link.visual.geometry.filename
@@ -77,12 +78,13 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
                 newLink.meshObj = meshObj
             else:
                 print("No mesh assigned for: "+name)
-        linkDict[name] = newLink
-        linkArray.append(newLink)
-        linkParserMap[name] = (newLink,link)
 
         chainArray = robot.get_chain(robot.get_root(),link.name, joints=False, links=True, fixed=True)
         newLink.order = len(chainArray)
+
+        linkDict[name] = newLink
+        linkArray.append(newLink)
+        linkParserMap[name] = (newLink,link)
 
     coordIndex = 0
     for joint in robot.joints:
@@ -91,6 +93,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
 
         child = linkDict[joint.child]
         parent = linkDict[joint.parent]
+
         defaultOrientation = rpyToRotationMatrix(joint.origin.rpy)
 
         parentFollower = joint.origin.xyz
@@ -98,8 +101,11 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
         jointClass = getJointClass(joint)
         jointUsedCoords = jointClass.getJointInputsRequirements()
         coordIndices = np.arange(coordIndex,coordIndex+jointUsedCoords)
+        
         parent.addFollower(parentFollower)
         parentFollowerIndex = len(parent.relativeFollower)-1
+        child.parentFollowerNumber = parentFollowerIndex
+        
         newJoint = jointClass(name=joint.name, childLink=child, parentLink=parent, parentFollowerNumber=parentFollowerIndex,
                                    usedGeneralizedCoordinates=coordIndices, usedControlInputs=coordIndices,
                                    defaultJointOrientation=defaultOrientation)

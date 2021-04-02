@@ -7,6 +7,7 @@ class JointFloatingBaseEuler_XYZ(Joint):
         self.type = "JointFloatingBaseEuler_XYZ"
         super(JointFloatingBaseEuler_XYZ, self).__init__(name, childLink, parentLink, parentFollowerNumber,
                                             usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation)
+                                            
     @staticmethod
     def getJointInputsRequirements():
         return 6 
@@ -18,7 +19,7 @@ class JointFloatingBaseEuler_XYZ(Joint):
         Ty = SrdMath.rotationMatrix3Dy(q[1])
         Tz = SrdMath.rotationMatrix3Dz(q[2])
 
-        self.childLink.relativeOrientation =  np.array(Tz)@Ty@Tx
+        self.childLink.relativeOrientation =  np.array(Tz)@np.array(Ty)@np.array(Tx)
 
         self.childLink.absoluteBase = self.parentLink.absoluteFollower[self.parentFollowerNumber]+np.array([q[3],q[4],q[5]])
         self.childLink.absoluteOrientation = self.parentLink.absoluteOrientation@self.childLink.relativeOrientation
@@ -26,9 +27,9 @@ class JointFloatingBaseEuler_XYZ(Joint):
         rBaseToFollower = self.childLink.relativeFollower - np.matlib.repmat(self.childLink.relativeBase,self.childLink.relativeFollower.shape[0],1)
         rBaseToCoM = self.childLink.relativeCoM - self.childLink.relativeBase
 
-        self.childLink.absoluteFollower = np.matlib.repmat(self.childLink.absoluteBase,self.childLink.relativeFollower.shape[0], 1) + self.childLink.absoluteOrientation.dot(rBaseToFollower.T).T
+        self.childLink.absoluteFollower = np.matlib.repmat(self.childLink.absoluteBase,self.childLink.relativeFollower.shape[0], 1) + (self.childLink.absoluteOrientation@rBaseToFollower.T).T
 
-        self.childLink.absoluteCoM = self.childLink.absoluteBase + self.childLink.absoluteOrientation.dot(rBaseToCoM)
+        self.childLink.absoluteCoM = self.childLink.absoluteBase + self.childLink.absoluteOrientation@rBaseToCoM
         
     def actionUpdate(self,inputVector):
         u = inputVector[self.usedControlInputs]

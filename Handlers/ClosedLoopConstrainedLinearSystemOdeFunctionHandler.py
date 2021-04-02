@@ -11,6 +11,7 @@ class ClosedLoopConstrainedLinearSystemOdeFunctionHandler:
         self.n = self.AA_table.shape[1]
         self.k = self.F_table.shape[2]
 
+    
     def __call__(self,t,x):
         closest_index = np.argmin(np.abs(self.time_table - t))
 

@@ -25,37 +25,19 @@ import os
 
 def tableBasedSimulation():
     p = Profiler()
-    cheetahLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/cheetah/cheetah/urdf/cheetah.urdf"),True)
-    cheetahChain = Chain(cheetahLinks)
-    remap = [
-    'trunk',
-    'FL_hip',
-    'FL_thigh',
-    'FL_calf',
-    'FL_foot',
-    'FR_hip',
-    'FR_thigh',
-    'FR_calf',
-    'FR_foot',
-    'RL_hip',
-    'RL_thigh',
-    'RL_calf',
-    'RL_foot',
-    'RR_hip',
-    'RR_thigh',
-    'RR_calf',
-    'RR_foot'
-    ]
+    iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),True)
+    iiwaChain = Chain(iiwaLinks)
 
-    cheetahChain.remapGenCoords(remap)
-    print(cheetahChain)
-    initialPosition = np.zeros(18)
+
+    print(iiwaChain)
+    initialPosition = np.zeros(7)
+    blank_chain = deepcopy(iiwaChain)
+    blank_chain.update(initialPosition)
     
-    engine = SymbolicEngine(cheetahChain.linkArray)
+    engine = SymbolicEngine(iiwaChain.linkArray)
 
     deriveJacobiansForlinkArray(engine)
     H = deriveJSIM(engine)
-    np.set_printoptions(linewidth=1000)
 
     iN, dH = deriveGeneralizedInertialForces_dH(engine, H)
     g = deriveGeneralizedGravitationalForces(engine)
@@ -71,10 +53,9 @@ def tableBasedSimulation():
                                                                               functionName_c="g_dynamics_c",
                                                                               functionName_T="g_dynamics_T",
                                                                               casadi_cCodeFilename="g_dynamics_generalized_coordinates",
-                                                                              path="./cheetah/Dynamics")
+                                                                              path="./iiwa/Dynamics")
 
     handlerGeneralizedCoordinatesModel = GeneralizedCoordinatesModelHandler(description_gen_coord_model)
-
 
     description_linearization = generateDynamicsLinearization(engine,
                                                               H=H,
@@ -84,17 +65,19 @@ def tableBasedSimulation():
                                                               functionName_B="g_linearization_B",
                                                               functionName_c="g_linearization_c",
                                                               casadi_cCodeFilename="g_dynamics_linearization",
-                                                              path="./cheetah2/Linearization")
+                                                              path="./iiwa/Linearization")
                                                               
     handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
 
-    constraint1 = engine.links["FL_calf"].absoluteFollower[0]
-    constraint2 = engine.links["FR_calf"].absoluteFollower[0]
-    constraint3 = engine.links["RL_calf"].absoluteFollower[0]
+    constraint1 = engine.links["iiwa_link_1"].absoluteFollower[0]
+    constraint2 = engine.links["iiwa_link_2"].absoluteFollower[0]
+    constraint3 = engine.links["iiwa_link_3"].absoluteFollower[0]
+    constraint4 = engine.links["iiwa_link_4"].absoluteFollower[0]
+    constraint5 = engine.links["iiwa_link_5"].absoluteFollower[0]
+    constraint6 = engine.links["iiwa_link_6"].absoluteFollower[0]
 
-
-    constraint = np.hstack([constraint1, constraint2])
+    constraint = np.hstack([constraint1])
     print("constraint size is: ", constraint.size)
 
     description_constraints = generateSecondDerivativeJacobians(engine,
@@ -103,14 +86,11 @@ def tableBasedSimulation():
                                                                 functionName_TaskJacobian="g_Constraint_Jacobian",
                                                                 functionName_TaskJacobianDerivative="g_Constraint_Jacobian_derivative",
                                                                 casadi_cCodeFilename="g_Constraints",
-                                                                path="./cheetah/Constraints")
+                                                                path="./iiwa/Constraints")
 
     handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof)
 
-    CoM = cheetahChain.getCoM()
-    orientation = engine.links["trunk"].absoluteOrientation
-
-    task = np.hstack([constraint3,CoM])
+    task = constraint6
     print("task size is: ", task.size)
 
 
@@ -120,21 +100,17 @@ def tableBasedSimulation():
                                                     functionName_TaskJacobian="g_InverseKinematics_TaskJacobian",
                                                     functionName_TaskJacobianDerivative="g_InverseKinematics_TaskJacobian_derivative",
                                                     casadi_cCodeFilename="g_InverseKinematics",
-                                                    path="./cheetah/InverseKinematics")
+                                                    path="./iiwa/InverseKinematics")
 
     ikModelHandler = IKModelHandler(description_IK, engine.dof, task.shape[0])
 
-    
     IC_task = ikModelHandler.getTask(initialPosition)
 
+    
     ikOffset = np.zeros(IC_task.shape[0])
     ikOffset[0] = 0.04
-    ikOffset[1] = 0.04
+    ikOffset[1] = 0.01
     ikOffset[2] = 0.03
-    ikOffset[3] = 0.04
-    ikOffset[4] = 0.05
-    ikOffset[5] = 0.00
-
 
     zeroOrderDerivativeNodes = np.hstack((IC_task,IC_task+ikOffset))
 
@@ -153,16 +129,13 @@ def tableBasedSimulation():
                                                     firstOrderDerivativeNodes,
                                                     secondOrderDerivativeNodes)
 
-
-    
+   
     timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
 
-
-    IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
-    plotIKTable(ikModelHandler, timeTable, IKTable)
+    IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="quadprog")
+    #plotIKTable(ikModelHandler, timeTable, IKTable)
 
     ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
-
 
     tf = ikSolutionHandler.timeExpiration
 
@@ -170,31 +143,30 @@ def tableBasedSimulation():
 
     A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,ikSolutionHandler,timeTable)
 
-
-    N_table, G_table, F_table = generateConstraiedModelTable(handlerConstraints,handlerGeneralizedCoordinatesModel,x_table,[])
-
+    #print(p.getReport())
     Q = 100*np.eye(2 * n)
     R = 0.01*np.eye(handlerGeneralizedCoordinatesModel.dofControl)
     count = A_table.shape[0]
-    K_table = generateCLQRTable(A_table, B_table, np.tile(Q, [count,1, 1]), np.tile(R, [ count, 1, 1]),N_table)
+    
+    K_table = generateLQRTable(A_table, B_table, np.tile(Q, [count,1, 1]), np.tile(R, [ count, 1, 1]))
 
 
     AA_table, cc_table = generateCloseLoopTable(A_table, B_table, c_table, K_table, x_table, u_table)
 
-    ode_fnc_handle = ClosedLoopConstrainedLinearSystemOdeFunctionHandler(AA_table, cc_table,G_table, F_table, timeTable)
+    ode_fnc_handle = LinearizedModelOdeFunctionHandler(handlerGeneralizedCoordinatesModel,handlerLinearizedModel, K_table, x_table,u_table, timeTable)
 
     x0 = np.hstack((initialPosition, np.zeros(initialPosition.shape[0])))
 
-    sol = solve_ivp(ode_fnc_handle, [0, tf], x0, t_eval=timeTable,method="LSODA")
+    sol = solve_ivp(ode_fnc_handle, [0, tf], x0, t_eval=timeTable,method="RK45")
 
     time_table_0 = sol.t
     solution_tape = sol.y.T
 
-    ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE", plot=True)
-    ax = plotGeneric(timeTable,x_table,ylabel="linearmodel", plot=True)
+    ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE")
+    ax = plotGeneric(timeTable,x_table,ylabel="linearmodel",old_ax = ax, plot=True)
 
-    ax = plotGeneric(timeTable,solution_tape[:,:n],figureTitle="position",ylabel="q", plot=True)
+    ax = plotGeneric(timeTable,solution_tape[:,1:n],figureTitle="position",ylabel="q", plot=True)
     ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel="v", plot=True)
 
     with open('anim_array.npy', 'wb') as f:
-        np.save(f, solution_tape[:,:n])
+        np.save(f, solution_tape[:,1:n+1])

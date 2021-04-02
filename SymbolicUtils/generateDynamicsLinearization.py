@@ -10,12 +10,12 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
                                     functionName_B,
                                     functionName_c,
                                     casadi_cCodeFilename,
-                                    path):
+                                    path,recalculate=False):
 
     pathFolder = os.path.basename(path)
     picklePath = os.path.join(path,pathFolder+".pkl")
 
-    if os.path.exists(picklePath):
+    if os.path.exists(picklePath) and not recalculate:
         with open(picklePath, 'rb') as f:
             modelDict = pickle.load(f)
         print("Loaded existing .so at "+path)
@@ -53,21 +53,19 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
 
     iH = SX.sym('iH', n, n)
 
-    TuPc = T@u+c
+    TuPc = T@u-c
     TCq = jacobian(TuPc, q)
     TCv = jacobian(TuPc, v)
-
-
 
     dfdq = -iH@reshape(jtimes(H, q,iH@TuPc), n, n) + TCq
 
     dfdv = iH @ TCv
 
-    A1 = vertcat(SX.zeros(n, n),SX.eye(n))
-    A2 = vertcat(dfdq.T,dfdv.T)
+    A1 = horzcat(SX.zeros(n, n),SX.eye(n))
+    A2 = horzcat(dfdq,dfdv)
 
-    A = horzcat(A1,A2)
-    B = horzcat(SX.zeros(n, m),iH@T)
+    A = vertcat(A1,A2)
+    B = vertcat(SX.zeros(n, m),iH@T)
     #linear_c = horzcat(SX.zeros(n, 1),iH@c - dfdq@q - dfdv@v)
     print('Starting writing function for the '+functionName_A)
     g_linearization_A = Function(functionName_A,

@@ -46,7 +46,7 @@ class Link:
         self.parentLink = None
         self.parentFollowerNumber = 0
 
-        self.order = 0              #order of the link, used to decide the order of link updates
+        self.order = order             #order of the link, used to decide the order of link updates
                                     #if order == 0 then it defines the link as ground,
                                     #if order > 0 - as a normal link; ground
                                     #has no parent link
@@ -70,5 +70,5 @@ class Link:
     def addFollower(self,follower):
         if self.relativeFollower.shape[0]==0:
             self.relativeFollower = np.array([follower])
-            return
-        self.relativeFollower = np.vstack((self.relativeFollower,follower))
+        else:
+            self.relativeFollower = np.vstack((self.relativeFollower,follower))

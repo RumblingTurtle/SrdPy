@@ -16,8 +16,11 @@ class Chain:
             if link.joint!=None:
                 self.jointArray.append(link.joint)
                 if len(link.joint.usedGeneralizedCoordinates) != 0:
-                    generalizedCoordinates = np.concatenate([generalizedCoordinates,link.joint.usedGeneralizedCoordinates])
-                    controlInputs = np.concatenate([controlInputs,link.joint.usedControlInputs])
+                    genCoords = link.joint.usedGeneralizedCoordinates
+                    controlInps = link.joint.usedControlInputs
+                    generalizedCoordinates = np.concatenate([generalizedCoordinates,genCoords])
+
+                    controlInputs = np.concatenate([controlInputs,controlInps])
             self.links[link.name] = link
         self.dof = len(generalizedCoordinates)
         self.controlDof = len(controlInputs)
@@ -50,3 +53,13 @@ class Chain:
     def update(self,q):
         for link in self.linkArray:
             link.update(q)
+
+    def remapGenCoords(self,newMap):
+        idx = 0
+        for linkName in newMap:
+            coords = self.links[linkName].joint.usedGeneralizedCoordinates
+            if len(coords)==0:
+                continue
+
+            self.links[linkName].joint.usedGeneralizedCoordinates = np.arange(idx,idx+len(coords))
+            idx=idx+len(coords)

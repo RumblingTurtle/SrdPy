@@ -9,8 +9,8 @@ def deriveJSIM(symbolicEngine:SymbolicEngine):
     H = SX.zeros(symbolicEngine.dof, symbolicEngine.dof)
 
     for link in symbolicEngine.linkArray:
-
-        H = H + link.jacobianCenterOfMass.T @ link.mass @ link.jacobianCenterOfMass + \
+        linkH = link.jacobianCenterOfMass.T @ link.mass @ link.jacobianCenterOfMass + \
             link.jacobianAngularVelocity.T @ link.inertia @ link.jacobianAngularVelocity
-
+        H = H + linkH
+        
     return simplify(H)

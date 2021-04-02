@@ -9,13 +9,13 @@ def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
                                                 functionName_c,
                                                 functionName_T,
                                                 casadi_cCodeFilename,
-                                                path):
+                                                path,recalculate=False):
 
         
     pathFolder = os.path.basename(path)
     picklePath = os.path.join(path,pathFolder+".pkl")
     
-    if os.path.exists(picklePath):
+    if os.path.exists(picklePath) and not recalculate:
         with open(picklePath, 'rb') as f:
             modelDict = pickle.load(f)
         print("Loaded existing .so at "+path)

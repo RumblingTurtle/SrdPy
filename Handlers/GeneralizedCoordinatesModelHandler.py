@@ -1,6 +1,6 @@
 from casadi import *
 import numpy as np
-
+import scipy
 class GeneralizedCoordinatesModelHandler():
     def __init__(self,description,usePinv=True):
         so_path = description["path"] + "/" + description["casadi_cCodeFilename"] + ".so"

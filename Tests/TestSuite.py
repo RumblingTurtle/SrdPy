@@ -7,7 +7,6 @@ class TestSuite():
     
     def runTests(self):
         self.runCheetahTests()
-
         #self.runThreeLinkTests()
 
     def runCheetahTests(self):

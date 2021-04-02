@@ -12,13 +12,34 @@ import os
 def animationTest():
     cheetahLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/cheetah/cheetah/urdf/cheetah.urdf"),True)
     cheetahChain = Chain(cheetahLinks)
+    remap = [
+    'trunk',
+    'FL_hip',
+    'FL_thigh',
+    'FL_calf',
+    'FL_foot',
+    'FR_hip',
+    'FR_thigh',
+    'FR_calf',
+    'FR_foot',
+    'RL_hip',
+    'RL_thigh',
+    'RL_calf',
+    'RL_foot',
+    'RR_hip',
+    'RR_thigh',
+    'RR_calf',
+    'RR_foot'
+    ]
+    
+    cheetahChain.remapGenCoords(remap)
     print(cheetahChain)
     initialPosition = np.zeros(18)
     blank_chain = deepcopy(cheetahChain)
     blank_chain.update(initialPosition)
 
 
-    """  
+    '''
     c1s = np.squeeze(blank_chain.links["RL_calf"].absoluteFollower)
     c2s = np.squeeze(blank_chain.links["RR_calf"].absoluteFollower)
     c3s = np.squeeze(blank_chain.links["FL_calf"].absoluteFollower)
@@ -51,7 +72,7 @@ def animationTest():
     vis = Visualizer()
     vis.show(blank_chain,True)
     input()
-    """
+    '''
     with open('anim_array.npy', 'rb') as f:
         q = np.load(f)
     

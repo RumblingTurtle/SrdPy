@@ -3,10 +3,10 @@ from SrdPy.LinksAndJoints import Joint
 
 class JointPivotY(Joint):
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
-                 usedGeneralizedCoordinates, usedControlInputs, defaultJointOrientation):
+                 usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation):
         self.type = "PivotY"
         super(JointPivotY, self).__init__(name, childLink, parentLink, parentFollowerNumber,
-                                             usedGeneralizedCoordinates, usedControlInputs, defaultJointOrientation)
+                                            usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation)
     @staticmethod
     def getJointInputsRequirements():
         return 1

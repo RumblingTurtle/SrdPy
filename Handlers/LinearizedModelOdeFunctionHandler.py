@@ -10,13 +10,13 @@ class LinearizedModelOdeFunctionHandler:
         self.u_table = u_table
         self.time_table = time_table
     
-    def eval(self,t,x):
+    def __call__(self,t,x):
         closest_index = np.argwhere(np.array(self.time_table)<=t)[-1]
         n = self.gcModelHandler.dofConfigurationSpaceRobot
 
-        K = self.K_tablep[closest_index]
-        x_desired = self.x_table[closest_index]
-        u_desired = self.u_table[closest_index]
+        K = np.squeeze(self.K_table[closest_index])
+        x_desired = np.squeeze(self.x_table[closest_index])
+        u_desired = np.squeeze(self.u_table[closest_index])
         
         u = -K@(x - x_desired) + u_desired
         
@@ -34,7 +34,7 @@ class LinearizedModelOdeFunctionHandler:
         a_desired = iH_desired@(T_desired@(u_desired) - c_desired)
         
         A =  self.linearizedModelHandler.getA(q, v, u, iH)
-        B =  self.linearizedModelHandler.getB(q, u,    iH)
+        B =  self.linearizedModelHandler.getB(q, u,    iH).T
         
         f0 = vertcat(v_desired,a_desired)
         dx = f0 + A@(x - x_desired) + B@(u - u_desired)
