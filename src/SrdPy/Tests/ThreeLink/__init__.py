@@ -1,0 +1,2 @@
+from SrdPy.Tests.ThreeLink.getThreeLinkChain import getThreeLinkChain
+from SrdPy.Tests.ThreeLink.ThreeLinkTests import ThreeLinkTests
