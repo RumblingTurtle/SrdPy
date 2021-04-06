@@ -60,7 +60,7 @@ def tableBasedSimulation():
     iN, dH = deriveGeneralizedInertialForces_dH(engine, H)
     g = deriveGeneralizedGravitationalForces(engine)
     d = deriveGeneralizedDissipativeForcesUniform(engine, 1)
-    T = deriveControlMap(engine)
+    T = deriveControlMapFloating(engine)
 
 
     description_gen_coord_model = generateDynamicsGeneralizedCoordinatesModel(engine,
@@ -84,17 +84,18 @@ def tableBasedSimulation():
                                                               functionName_B="g_linearization_B",
                                                               functionName_c="g_linearization_c",
                                                               casadi_cCodeFilename="g_dynamics_linearization",
-                                                              path="./cheetah2/Linearization")
+                                                              path="./cheetah/Linearization")
                                                               
     handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
 
-    constraint1 = engine.links["FL_calf"].absoluteFollower[0]
-    constraint2 = engine.links["FR_calf"].absoluteFollower[0]
-    constraint3 = engine.links["RL_calf"].absoluteFollower[0]
+    constraint1 = engine.links["RL_calf"].absoluteFollower[0]
+    constraint2 = engine.links["RR_calf"].absoluteFollower[0]
+    constraint3 = engine.links["FL_calf"].absoluteFollower[0]
+    constraint4 = engine.links["FR_calf"].absoluteFollower[0]
+    constraint5 = engine.links["FR_thigh"].absoluteFollower[0]
 
-
-    constraint = np.hstack([constraint1, constraint2])
+    constraint = np.hstack([[constraint1[0],constraint1[2]], constraint2,constraint3])
     print("constraint size is: ", constraint.size)
 
     description_constraints = generateSecondDerivativeJacobians(engine,
@@ -108,9 +109,8 @@ def tableBasedSimulation():
     handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof)
 
     CoM = cheetahChain.getCoM()
-    orientation = engine.links["trunk"].absoluteOrientation
 
-    task = np.hstack([constraint3,CoM])
+    task = np.hstack([constraint5,constraint4,constraint])
     print("task size is: ", task.size)
 
 
@@ -128,13 +128,13 @@ def tableBasedSimulation():
     IC_task = ikModelHandler.getTask(initialPosition)
 
     ikOffset = np.zeros(IC_task.shape[0])
-    ikOffset[0] = 0.04
-    ikOffset[1] = 0.04
-    ikOffset[2] = 0.03
-    ikOffset[3] = 0.04
-    ikOffset[4] = 0.05
-    ikOffset[5] = 0.00
+    ikOffset[0] = 0.2
+    ikOffset[1] = 0
+    ikOffset[2] = 0.2
 
+    ikOffset[3] = 0.2
+    ikOffset[4] = 0
+    ikOffset[5] = 0.1
 
     zeroOrderDerivativeNodes = np.hstack((IC_task,IC_task+ikOffset))
 
@@ -161,6 +161,11 @@ def tableBasedSimulation():
     IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
     plotIKTable(ikModelHandler, timeTable, IKTable)
 
+
+    n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
+    with open('anim_array.npy', 'wb') as f:
+        np.save(f, IKTable[:,:n])
+    return
     ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
 
@@ -171,7 +176,7 @@ def tableBasedSimulation():
     A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,ikSolutionHandler,timeTable)
 
 
-    N_table, G_table, F_table = generateConstraiedModelTable(handlerConstraints,handlerGeneralizedCoordinatesModel,x_table,[])
+    N_table, G_table, F_table = generateConstraiedModelTable(handlerConstraints,handlerGeneralizedCoordinatesModel,x_table)
 
     Q = 100*np.eye(2 * n)
     R = 0.01*np.eye(handlerGeneralizedCoordinatesModel.dofControl)

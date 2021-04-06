@@ -58,14 +58,15 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
     CG.add(g_InverseKinematics_TaskJacobianDerivative)
     CG.generate()
 
-    command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
-    print("Running gcc")
+    if not useJIT:
+        command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
+        print("Running gcc")
 
-    import subprocess
-    exitcode = subprocess.Popen(command).wait()
-    if exitcode!=0:
-        print("GCC compilation error")
-        return {}
+        import subprocess
+        exitcode = subprocess.Popen(command).wait()
+        if exitcode!=0:
+            print("GCC compilation error")
+            return {}
 
     os.chdir(current_cwd)
     print("Generated C code!")

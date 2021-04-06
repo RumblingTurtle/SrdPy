@@ -2,12 +2,12 @@ import numpy as np
 from scipy.linalg import null_space
 
     
-def generateConstraiedModelTable(constraintsModel, gcModelHandler, x_table,new_dimensions):
+def generateConstraiedModelTable(constraintsModel, gcModelHandler, x_table,new_dimensions=None):
     count = x_table.shape[0]
     n = x_table.shape[1]
     k = constraintsModel.dofConstraint
 
-    if len(new_dimensions)!=0:
+    if new_dimensions!=None:
         nn = new_dimensions
     else:
         nn = n - 2*k

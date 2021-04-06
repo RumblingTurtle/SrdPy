@@ -8,9 +8,15 @@ class LinearizedModelHandler:
         self.dofConfigurationSpaceRobot = description["dofConfigurationSpaceRobot"]
         self.dofStateSpaceRobot = description["dofStateSpaceRobot"]
         self.dofControl = description["dofControl"]
-        self.Ahandler = external(description["functionName_A"], so_path)
-        self.Bhandler = external(description["functionName_B"], so_path)
-        #self.Chandler = external(description["functionName_c"], so_path)
+
+        if description["useJIT"]:
+            imp = Importer(description["path"] + "/" +description["casadi_cCodeFilename"]+".c","clang")
+        else:
+            imp = so_path
+            
+        self.Ahandler = external(description["functionName_A"], imp)
+        self.Bhandler = external(description["functionName_B"], imp)
+        #self.Chandler = external(description["functionName_c"], imp)
 
     def getA(self,q, v, u, iH):
         return self.Ahandler(DM(q),DM(v),DM(u),DM(iH))

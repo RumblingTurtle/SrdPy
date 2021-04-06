@@ -9,6 +9,6 @@ def inversePositionProblemSolver_lsqnonlin(task, taskJacobian, value, initialGue
     def func_jacobian(q):
         return taskJacobian(q)
 
-    return least_squares(function,initialGuess,func_jacobian,ftol=1e-30,tr_solver='lsmr').x
+    return least_squares(function,initialGuess,func_jacobian,tr_solver='lsmr').x
 
 

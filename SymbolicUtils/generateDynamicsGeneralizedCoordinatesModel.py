@@ -9,7 +9,7 @@ def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
                                                 functionName_c,
                                                 functionName_T,
                                                 casadi_cCodeFilename,
-                                                path,recalculate=False):
+                                                path,recalculate=False,useJIT=False):
 
         
     pathFolder = os.path.basename(path)
@@ -46,14 +46,15 @@ def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
     CG.add(g_dynamics_T)
     CG.generate()
 
-    command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
-    print("Running gcc")
+    if not useJIT:
+        command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
+        print("Running gcc")
 
-    import subprocess
-    exitcode = subprocess.Popen(command).wait()
-    if exitcode!=0:
-        print("GCC compilation error")
-        return {}
+        import subprocess
+        exitcode = subprocess.Popen(command).wait()
+        if exitcode!=0:
+            print("GCC compilation error")
+            return {}
 
     os.chdir(current_cwd)
 
@@ -65,7 +66,8 @@ def generateDynamicsGeneralizedCoordinatesModel(symbolicEngine:SymbolicEngine,
                 "casadi_cCodeFilename":casadi_cCodeFilename,
                 "path":path,
                 "dofConfigurationSpaceRobot":symbolicEngine.dof,
-                "dofControl":symbolicEngine.u.shape[0]}
+                "dofControl":symbolicEngine.u.shape[0],
+                "useJIT":useJIT}
 
     with open(picklePath, 'wb') as f:
         pickle.dump(resultDict, f)

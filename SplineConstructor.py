@@ -91,7 +91,7 @@ class SplineConstructor():
                 segment[2].append(2)
                 segment[2].append(2)
 
-            segments.append(segment)
+                segments.append(segment)
 
             nodeCount = len(nodes)
             timesForCurrentSpline = [0]*nodeCount

@@ -8,9 +8,14 @@ class GeneralizedCoordinatesModelHandler():
         self.dofConfigurationSpaceRobot = description["dofConfigurationSpaceRobot"]
         self.dofControl = description["dofControl"]
 
-        self.getJointSpaceInertiaMatrixHandler = external(description["functionName_H"], so_path)
-        self.getBiasVectorHandler = external(description["functionName_c"], so_path)
-        self.getControlMapHandler = external(description["functionName_T"], so_path)
+        if description["useJIT"]:
+            imp = Importer(description["path"] + "/" +description["casadi_cCodeFilename"]+".c","clang")
+        else:
+            imp = so_path
+            
+        self.getJointSpaceInertiaMatrixHandler = external(description["functionName_H"], imp)
+        self.getBiasVectorHandler = external(description["functionName_c"], imp)
+        self.getControlMapHandler = external(description["functionName_T"], imp)
         self.usePinv = usePinv
 
     def getJointSpaceInertiaMatrix(self, q):

@@ -34,8 +34,8 @@ class LinearizedModelOdeFunctionHandler:
         a_desired = iH_desired@(T_desired@(u_desired) - c_desired)
         
         A =  self.linearizedModelHandler.getA(q, v, u, iH)
-        B =  self.linearizedModelHandler.getB(q, u,    iH).T
+        B =  self.linearizedModelHandler.getB(q, u,    iH)
         
         f0 = vertcat(v_desired,a_desired)
         dx = f0 + A@(x - x_desired) + B@(u - u_desired)
-        return dx
+        return np.squeeze(dx)

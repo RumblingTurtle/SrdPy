@@ -10,7 +10,7 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
                                     functionName_B,
                                     functionName_c,
                                     casadi_cCodeFilename,
-                                    path,recalculate=False):
+                                    path,recalculate=False,useJIT=False):
 
     pathFolder = os.path.basename(path)
     picklePath = os.path.join(path,pathFolder+".pkl")
@@ -98,14 +98,15 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
     #CG.add(g_linearization_c)
     CG.generate()
     
-    command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
-    print("Running gcc")
+    if not useJIT:
+        command = ["gcc","-fPIC","-shared",c_function_name, "-o",so_function_name]
+        print("Running gcc")
 
-    import subprocess
-    exitcode = subprocess.Popen(command).wait()
-    if exitcode!=0:
-        print("GCC compilation error")
-        return {}
+        import subprocess
+        exitcode = subprocess.Popen(command).wait()
+        if exitcode!=0:
+            print("GCC compilation error")
+            return {}
 
     os.chdir(current_cwd)
     print("Generated C code!")
@@ -117,7 +118,8 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
             "path": path,
             "dofConfigurationSpaceRobot": n,
             "dofStateSpaceRobot": 2 * n,
-            "dofControl": m}
+            "dofControl": m,
+            "useJIT":useJIT}
 
     with open(picklePath, 'wb') as f:
         pickle.dump(resultDict, f)
