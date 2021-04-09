@@ -1,0 +1,8 @@
+git+https://github.com/rdeits/meshcat-python.git@master#egg=meshcat
+numpy~=1.19.5
+casadi~=3.5.5
+control~=0.9.0
+slycot~=0.4.0
+urdf-parser-py~=0.0.3
+pyngrok~=5.0.5
+qpsolvers~=1.6.1
