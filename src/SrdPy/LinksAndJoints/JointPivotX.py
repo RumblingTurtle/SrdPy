@@ -1,12 +1,19 @@
+from casadi.casadi import jacobian
 from SrdPy import SrdMath
 from SrdPy.LinksAndJoints import Joint
+from SrdPy import SparseMatrix
+from SrdPy.SrdMath import TransformHandler3DX_rotation
+import numpy as np
+
 
 class JointPivotX(Joint):
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
                  usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation):
-        self.type = "PivotX"
         super(JointPivotX, self).__init__(name, childLink, parentLink, parentFollowerNumber,
                                             usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation)
+        self.transformHandler = TransformHandler3DX_rotation()
+        self.type = "PivotX"
+        
     @staticmethod
     def getJointInputsRequirements():
         return 1
@@ -16,7 +23,10 @@ class JointPivotX(Joint):
 
         self.childLink.relativeOrientation =  self.defaultJointOrientation@SrdMath.rotationMatrix3Dx(q)
 
+        self.updateTransformDerivatives(inputVector)
+
         self.forwardKinematicsJointUpdate()
+        
 
     def actionUpdate(self,inputVector):
         u = inputVector[self.usedControlInputs]

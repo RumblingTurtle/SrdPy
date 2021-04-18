@@ -10,3 +10,21 @@ class SymbolicEngine(Chain):
         self.u = SX.sym("u", self.controlDof)
 
         self.update(self.q)
+
+    def getH(self):
+        result = SX.zeros(self.dof,self.dof)
+        for link in self.linkArray:
+            result = result+link.H
+        return result
+        
+    def get_dH(self):
+        result = SX.zeros(self.dof*self.dof*self.dof)
+        for link in self.linkArray:
+            result = result+link.dH
+        return result
+
+    def get_ddH(self):
+        result = SX.zeros(self.dof*self.dof*self.dof*self.dof)
+        for link in self.linkArray:
+            result = result+link.ddH
+        return result

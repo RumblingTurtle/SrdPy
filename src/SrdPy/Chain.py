@@ -22,6 +22,8 @@ class Chain:
 
                     controlInputs = np.concatenate([controlInputs,controlInps])
             self.links[link.name] = link
+        
+
         self.dof = len(generalizedCoordinates)
         self.controlDof = len(controlInputs)
 
@@ -42,7 +44,7 @@ class Chain:
             mass = mass + link.mass
         
         return CoM/mass
-
+    
     def __str__(self):
         out_str = self.name+"\n"
         out_str = out_str+"Links: \n"

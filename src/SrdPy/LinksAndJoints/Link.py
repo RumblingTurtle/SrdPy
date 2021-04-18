@@ -60,9 +60,25 @@ class Link:
         self.angularVelocity = []
         ###################
 
+        #Sparse derivative variables
+        self.absoluteOrientation_dTdq = None
+        self.absoluteOrientation_dTddq = None
+        self.absoluteOrientation_dTdddq = None
+        
+        self.relativeOrientation_dTdq = None
+        self.relativeOrientation_dTddq = None
+        self.relativeOrientation_dTdddq = None
+
+        self.relativeAngularVelocityJacobian = None
+        
+        self.H = None
+        self.dH = None
+        self.ddH = None
+
         #dynamically added additional parameters
         self.calculated = []
         self.meshObj = None
+        self.dof = None
 
     def update(self,q):
         self.joint.update(q)
