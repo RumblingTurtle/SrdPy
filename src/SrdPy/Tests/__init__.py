@@ -1,3 +1,3 @@
-from SrdPy.Tests.TestSuite import TestSuite
-from SrdPy.Tests.ThreeLink import *
-from SrdPy.Tests.Cheetah import *
+from .TestSuite import TestSuite
+from .ThreeLink import *
+from .Cheetah import *

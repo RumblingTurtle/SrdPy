@@ -1,2 +1,2 @@
-from SrdPy.Loggers.ProgressDisplayHandler import ProgressDisplayHandler
-from SrdPy.Loggers.StateLoggerHandler import StateLoggerHandler
+from .ProgressDisplayHandler import ProgressDisplayHandler
+from .StateLoggerHandler import StateLoggerHandler

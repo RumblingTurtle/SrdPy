@@ -1,4 +1,4 @@
-from casadi.casadi import jacobian
+from casadi.casadi import *
 from SrdPy import SrdMath
 from SrdPy.LinksAndJoints import Joint
 from SrdPy import SparseMatrix
@@ -23,7 +23,8 @@ class JointPivotX(Joint):
 
         self.childLink.relativeOrientation =  self.defaultJointOrientation@SrdMath.rotationMatrix3Dx(q)
 
-        self.updateTransformDerivatives(inputVector)
+        if type(inputVector)==SX:
+            self.updateTransformDerivatives(inputVector)
 
         self.forwardKinematicsJointUpdate()
         

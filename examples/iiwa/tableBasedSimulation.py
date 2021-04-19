@@ -37,7 +37,7 @@ def my_generateLQRTable(A_table, B_table, Q_table, R_table):
         
     return K_table
 
-iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./iiwa14.urdf"),True)
+iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),True)
 iiwaChain = Chain(iiwaLinks)
 
 
@@ -170,11 +170,6 @@ ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel=
 with open('anim_array.npy', 'wb') as f:
     np.save(f, solution_tape[:,:n])
     
-chainLinks = getLinkArrayFromURDF(os.path.abspath("./iiwa14.urdf"),True)
-chain = Chain(chainLinks)
-
-print(chain)
-blank_chain = deepcopy(chain)
 blank_chain.update(initialPosition)
 with open('anim_array.npy', 'rb') as f:
     q = np.load(f)

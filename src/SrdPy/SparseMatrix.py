@@ -1,6 +1,5 @@
 from casadi import *
 import numpy as np
-from numpy.core.numeric import indices
 
 #Simple integer list comparison with preserved order
 def compare_lists(list1,list2):
@@ -88,9 +87,10 @@ class SparseMatrix():
         else:
             result.shape[0] = tensor.shape[0]
         
-        ordered_idxs = np.argsort(self.derivative_idx+tensor.derivative_idx)
+        derivativeIndices = self.derivative_idx+tensor.derivative_idx
+        orderedIdxs = np.argsort(derivativeIndices)
 
-        shapeTail = np.array(self.shape[2:]+tensor.shape[2:])[ordered_idxs].tolist()
+        shapeTail = np.array(self.shape[2:]+tensor.shape[2:])[orderedIdxs].tolist()
 
         result.shape+=shapeTail
 
@@ -108,9 +108,9 @@ class SparseMatrix():
                 if len(tensor.shape)==3:
                     bidx = [bidx]
 
-                indices = np.array(aidx+bidx)[ordered_idxs].tolist()
+                index = np.array(aidx+bidx)[orderedIdxs].tolist()
 
-                result.indices.append(indices)
+                result.indices.append(index)
 
                 if not mulLeft:  
                     value = aval@bval
@@ -132,7 +132,8 @@ class SparseMatrix():
         aidxs = self.indices
         bidxs = tensor.indices
         
-        ordered_idxs = np.argsort(self.derivative_idx+tensor.derivative_idx)
+        derivativesIndices = self.derivative_idx+tensor.derivative_idx
+        orderedIdxs = np.argsort(derivativesIndices)
 
         shape = self.shape[2:]+tensor.shape[2:]
         for aidx,aval in zip(aidxs,avalues):
@@ -147,7 +148,7 @@ class SparseMatrix():
                     index = np.array(aidx+bidx)
                     
                     if len(self.shape)==len(tensor.shape) and len(self.shape)==4:
-                        index = np.array(aidx+bidx)[ordered_idxs].tolist()
+                        index = np.array(aidx+bidx)[orderedIdxs].tolist()
                     #indexing magic for proper reshape result
                     index = index[::-1]
                     if len(index)==3:
