@@ -23,6 +23,8 @@ def getJointClass(joint):
     if joint.type == "fixed":
         return JointFixed
 
+    return None
+
 
 
 
@@ -47,7 +49,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
             linkParserMap[link.name] = (linkDict[root_link],link)
             continue
         
-        if link.inertial==None:
+        if link.inertial==None or link.inertial.origin==None:
             continue
 
         name = link.name
