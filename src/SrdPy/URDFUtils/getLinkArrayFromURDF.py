@@ -1,3 +1,4 @@
+from os.path import join
 from urdf_parser_py.urdf import URDF
 import urdf_parser_py
 import numpy as np
@@ -80,7 +81,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
                 print("No mesh assigned for: "+name)
 
         chainArray = robot.get_chain(robot.get_root(),link.name, joints=False, links=True, fixed=True)
-        newLink.order = len(chainArray)
+        newLink.order = -1
 
         linkDict[name] = newLink
         linkArray.append(newLink)
@@ -93,14 +94,13 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
 
         child = linkDict[joint.child]
         parent = linkDict[joint.parent]
-
         defaultOrientation = rpyToRotationMatrix(joint.origin.rpy)
 
         parentFollower = joint.origin.xyz
 
         jointClass = getJointClass(joint)
         jointUsedCoords = jointClass.getJointInputsRequirements()
-        coordIndices = np.arange(coordIndex,coordIndex+jointUsedCoords)
+        coordIndices = np.arange(coordIndex,coordIndex+jointUsedCoords).tolist()
         
         parent.addFollower(parentFollower)
         parentFollowerIndex = len(parent.relativeFollower)-1
@@ -112,5 +112,7 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
 
         coordIndex=coordIndex+jointUsedCoords
         jointArray.append(newJoint)
-
+    
+    for joint in jointArray:
+        joint.updateOrder()
     return linkArray

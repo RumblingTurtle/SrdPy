@@ -1,12 +1,19 @@
 from SrdPy import SrdMath
 from SrdPy.LinksAndJoints import Joint
+from casadi.casadi import *
+from SrdPy.SrdMath import TransformHandler3DZ_rotation
 
 class JointPivotZ(Joint):
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
                  usedGeneralizedCoordinates, usedControlInputs, defaultJointOrientation):
-        self.type = "PivotZ"
         super(JointPivotZ, self).__init__(name, childLink, parentLink, parentFollowerNumber,
                                              usedGeneralizedCoordinates, usedControlInputs, defaultJointOrientation)
+
+        self.type = "PivotZ"
+        self.transformHandler = TransformHandler3DZ_rotation()
+
+
+        
     @staticmethod
     def getJointInputsRequirements():
         return 1
@@ -15,6 +22,9 @@ class JointPivotZ(Joint):
         q = inputVector[self.usedGeneralizedCoordinates]
 
         self.childLink.relativeOrientation = self.defaultJointOrientation@SrdMath.rotationMatrix3Dz(q)
+
+        if type(inputVector)==SX:
+            self.updateTransformDerivatives(inputVector)
 
         self.forwardKinematicsJointUpdate()
 

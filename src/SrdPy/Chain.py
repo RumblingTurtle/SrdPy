@@ -1,3 +1,4 @@
+from SrdPy.Profiling import profile
 import numpy as np
 
 class Chain:
@@ -51,7 +52,7 @@ class Chain:
         for i,link in enumerate(self.linkArray):
             out_str = out_str+str(i)+". "+link.name+" \n"
         return out_str
-            
+
     def update(self,q):
         for link in self.linkArray:
             link.update(q)

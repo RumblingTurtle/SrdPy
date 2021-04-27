@@ -1,3 +1,4 @@
+import imp
 from SrdPy.URDFUtils import getLinkArrayFromURDF
 
 from SrdPy.TableGenerators import generateConstraiedLinearModelTable
@@ -22,7 +23,7 @@ from SrdPy import Profiler
 import numpy as np
 from scipy.integrate import solve_ivp
 import os
-    
+from cprofile import profile
 from control import lqr
 def my_generateLQRTable(A_table, B_table, Q_table, R_table):
     count = A_table.shape[0]
@@ -37,6 +38,8 @@ def my_generateLQRTable(A_table, B_table, Q_table, R_table):
         
     return K_table
 
+pr = Profile()
+pr.enable()
 iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),True)
 iiwaChain = Chain(iiwaLinks)
 
@@ -132,7 +135,7 @@ handlerIK_taskSplines = IKtaskSplinesHandler(nodeTimes,
 timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
 
 IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
-plotIKTable(ikModelHandler, timeTable, IKTable)
+#plotIKTable(ikModelHandler, timeTable, IKTable)
 
 ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
@@ -161,11 +164,11 @@ sol = solve_ivp(ode_fnc_handle, [0, tf], x0, t_eval=timeTable,method="RK45")
 time_table_0 = sol.t
 solution_tape = sol.y.T
 
-ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE")
-ax = plotGeneric(timeTable,x_table,ylabel="linearmodel",old_ax = ax, plot=True)
+#ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE")
+#ax = plotGeneric(timeTable,x_table,ylabel="linearmodel",old_ax = ax, plot=True)
 
-ax = plotGeneric(timeTable,solution_tape[:,:n],figureTitle="position",ylabel="q", plot=True)
-ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel="v", plot=True)
+#ax = plotGeneric(timeTable,solution_tape[:,:n],figureTitle="position",ylabel="q", plot=True)
+#ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel="v", plot=True)
 
 with open('anim_array.npy', 'wb') as f:
     np.save(f, solution_tape[:,:n])
@@ -175,6 +178,11 @@ with open('anim_array.npy', 'rb') as f:
     q = np.load(f)
 
 blank_chain.update(q[0])
-plotGeneric(np.arange(q.shape[0]),q,plot=True)
-vis = Visualizer()
-vis.animate(blank_chain,q,framerate=0.1,showMeshes=True)
+#plotGeneric(np.arange(q.shape[0]),q,plot=True)
+#vis = Visualizer()
+#vis.animate(blank_chain,q,framerate=0.1,showMeshes=True)
+
+pr.disable()
+import pstats
+stats = pstats.Stats(pr).sort_stats('ncalls')
+stats.print_stats()

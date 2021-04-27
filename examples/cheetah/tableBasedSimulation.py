@@ -22,8 +22,12 @@ from SrdPy import Profiler
 import numpy as np
 from scipy.integrate import solve_ivp
 import os
+from cProfile import Profile
+from control import lqr
 
-cheetahLinks = getLinkArrayFromURDF(os.path.abspath("./cheetah/urdf/cheetah.urdf"),True)
+pr = Profile()
+pr.enable()
+cheetahLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/cheetah/cheetah/urdf/cheetah.urdf"),True)
 cheetahChain = Chain(cheetahLinks)
 remap = [
 'trunk',
@@ -157,13 +161,13 @@ timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.tim
 
 
 IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
-plotIKTable(ikModelHandler, timeTable, IKTable)
+#plotIKTable(ikModelHandler, timeTable, IKTable)
 
 
 n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 with open('anim_array.npy', 'wb') as f:
     np.save(f, IKTable[:,:n])
-return
+
 ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
 
@@ -193,11 +197,15 @@ sol = solve_ivp(ode_fnc_handle, [0, tf], x0, t_eval=timeTable,method="LSODA")
 time_table_0 = sol.t
 solution_tape = sol.y.T
 
-ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE", plot=True)
-ax = plotGeneric(timeTable,x_table,ylabel="linearmodel", plot=True)
+#ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE", plot=True)
+#ax = plotGeneric(timeTable,x_table,ylabel="linearmodel", plot=True)
 
-ax = plotGeneric(timeTable,solution_tape[:,:n],figureTitle="position",ylabel="q", plot=True)
-ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel="v", plot=True)
+#ax = plotGeneric(timeTable,solution_tape[:,:n],figureTitle="position",ylabel="q", plot=True)
+#ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel="v", plot=True)
 
-with open('anim_array.npy', 'wb') as f:
-    np.save(f, solution_tape[:,:n])
+#with open('anim_array.npy', 'wb') as f:
+#    np.save(f, solution_tape[:,:n])
+pr.disable()
+import pstats
+stats = pstats.Stats(pr).sort_stats('ncalls')
+stats.print_stats()

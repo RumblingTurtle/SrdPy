@@ -246,6 +246,15 @@
       </geometry>
     </collision>
   </link>
+
+  <link name="base">
+  </link>
+    <joint name="base_to_0" type="fixed">
+    <parent link="base"/>
+    <child link="pelvis"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
   <link name="pelvis">
     <inertial>
       <mass value="17.882"/>
@@ -263,6 +272,8 @@
       </geometry>
     </collision>
   </link>
+
+
   <link name="r_clav">
     <inertial>
       <mass value="3.45"/>

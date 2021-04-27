@@ -2,6 +2,7 @@ import numpy as np
 import numpy.matlib
 from SrdPy.SparseMatrix import SparseMatrix
 from casadi import *
+from SrdPy.Profiling import timer
 
 class Joint:
 
@@ -22,14 +23,17 @@ class Joint:
 
         childLink.joint = self
         self.transformHandler = None
+        self.sparseDerive=True
 
     def updateTransformDerivatives(self,inputVector):
+        
         q = inputVector[self.usedGeneralizedCoordinates]
         dof = inputVector.size()[0]
 
         if self.childLink.dof == None:
             self.childLink.dof = dof
-
+        if not self.sparseDerive:
+            return
         relativeOrientation_dt = SparseMatrix([self.transformHandler.dT(q)],self.usedGeneralizedCoordinates,[3,3,dof],[1])
         relativeOrientation_ddt = SparseMatrix([self.transformHandler.ddT(q)],[self.usedGeneralizedCoordinates*2],[3,3,dof,dof],[1,2])
         relativeOrientation_dddt = SparseMatrix([self.transformHandler.dddT(q)],[self.usedGeneralizedCoordinates*3],[3,3,dof,dof,dof],[1,2,3])
@@ -72,6 +76,7 @@ class Joint:
 
         #####################
         #Third order derivative of the transformation
+        '''
         d3T = p_absoluteOrientation_dddt@Tr2+T1@relativeOrientation_dddt
 
         p_absoluteOrientation_ddt.derivative_idx = [1,2]
@@ -105,7 +110,7 @@ class Joint:
         p_absoluteOrientation_dt.derivative_idx = [1]
         p_absoluteOrientation_ddt.derivative_idx = [1,2]
         p_absoluteOrientation_dddt.derivative_idx = [1,2,3]
-        
+        '''
         currentLink = self.childLink
         linkChain = []
         while currentLink.joint!=None:
@@ -118,15 +123,15 @@ class Joint:
         offset = np.reshape(offset,(3,1))
         jacobianChains[0].append(linkChain[0].absoluteOrientation_dTdq@offset)
         jacobianChains[1].append(linkChain[0].absoluteOrientation_dTddq@offset)
-        jacobianChains[2].append(linkChain[0].absoluteOrientation_dTdddq@offset)
+        #jacobianChains[2].append(linkChain[0].absoluteOrientation_dTdddq@offset)
         angularJacobian = linkChain[0].relativeAngularVelocityJacobian
         if len(linkChain)>1:
             for i,link in enumerate(linkChain[1:],start=1):
-                offset = linkChain[i-1].relativeFollower[link.parentFollowerNumber]-linkChain[i-1].relativeBase
+                offset = linkChain[i].relativeFollower[linkChain[i-1].parentFollowerNumber]-linkChain[i].relativeBase
                 offset = np.reshape(offset,(3,1))
                 jacobianChains[0].append(link.absoluteOrientation_dTdq@offset)
                 jacobianChains[1].append(link.absoluteOrientation_dTddq@offset)
-                jacobianChains[2].append(link.absoluteOrientation_dTdddq@offset)
+                #jacobianChains[2].append(link.absoluteOrientation_dTdddq@offset)
                 angularJacobian = angularJacobian+link.relativeAngularVelocityJacobian
             
 
@@ -135,7 +140,7 @@ class Joint:
         H = SX.zeros(dof,dof)
 
         dH = SX.zeros(dof*dof*dof)
-        ddH = SX.zeros(dof*dof*dof*dof)
+        #ddH = SX.zeros(dof*dof*dof*dof)
 
         for i in range(len(jacobianChains[0])):
             for j in range(len(jacobianChains[0])):
@@ -144,7 +149,7 @@ class Joint:
 
                 dH_1 = jacobianChains[0][i]@jacobianChains[1][j]
                 dH_2 = jacobianChains[1][i]@jacobianChains[0][j]
-
+                '''
                 ddH_1 = jacobianChains[2][i]@jacobianChains[0][j]
                 ddH_2 = jacobianChains[0][i]@jacobianChains[2][j]
                 
@@ -158,14 +163,24 @@ class Joint:
 
                 jacobianChains[1][j].derivative_idx=[1,2]
                 jacobianChains[1][i].derivative_idx=[1,2]
-
+'''
                 H = H + H_1*self.childLink.mass     
                 dH = dH+(dH_1+dH_2)*self.childLink.mass
-                ddH = ddH+(ddH_1+ddH_2+ddH_3+ddH_4)*self.childLink.mass
+                #ddH = ddH+(ddH_1+ddH_2+ddH_3+ddH_4)*self.childLink.mass
 
         self.childLink.H = H+angularJacobian
         self.childLink.dH = dH
-        self.childLink.ddH = ddH
+        #self.childLink.ddH = ddH
+
+    def updateOrder(self):
+        currentLink = self.childLink
+        linkChain = []
+        while currentLink.order==-1:
+            linkChain.append(currentLink)
+            currentLink = currentLink.joint.parentLink
+        
+        for link in linkChain[::-1]:
+            link.order = link.joint.parentLink.order+1
 
     def update(self,inputVector):
         pass

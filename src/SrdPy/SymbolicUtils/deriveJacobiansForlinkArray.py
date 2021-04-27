@@ -36,5 +36,5 @@ def deriveJacobiansForlinkArray(symbolicEngine:SymbolicEngine):
         link.angularVelocity[0] = -omega[1, 2]
         link.angularVelocity[1] = omega[0, 2]
         link.angularVelocity[2] = -omega[0, 1]
-        link.angularVelocity = simplify(link.angularVelocity)
+        link.angularVelocity = link.angularVelocity
         link.jacobianAngularVelocity = jacobian(link.angularVelocity, symbolicEngine.v)

@@ -15,16 +15,16 @@ class SymbolicEngine(Chain):
         result = SX.zeros(self.dof,self.dof)
         for link in self.linkArray:
             result = result+link.H
-        return result
+        return simplify(result)
         
     def get_dH(self):
         result = SX.zeros(self.dof*self.dof*self.dof)
         for link in self.linkArray:
             result = result+link.dH
-        return result
+        return simplify(result)
 
     def get_ddH(self):
         result = SX.zeros(self.dof*self.dof*self.dof*self.dof)
         for link in self.linkArray:
             result = result+link.ddH
-        return result
+        return simplify(result)

@@ -15,6 +15,6 @@ def deriveGeneralizedGravitationalForces(symbolicEngine:SymbolicEngine, gravitat
     for link in symbolicEngine.linkArray:
         G = G +link.mass * link.jacobianCenterOfMass.T @ gravitationalConstant
 
-    G = simplify(G)
+    G = G
 
     return G

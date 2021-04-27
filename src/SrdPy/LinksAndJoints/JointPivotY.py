@@ -1,12 +1,15 @@
 from SrdPy import SrdMath
 from SrdPy.LinksAndJoints import Joint
+from SrdPy.SrdMath import TransformHandler3DY_rotation
+from casadi.casadi import *
 
 class JointPivotY(Joint):
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
                  usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation):
-        self.type = "PivotY"
         super(JointPivotY, self).__init__(name, childLink, parentLink, parentFollowerNumber,
                                             usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation)
+        self.type = "PivotY"
+        self.transformHandler = TransformHandler3DY_rotation()
     @staticmethod
     def getJointInputsRequirements():
         return 1
@@ -15,6 +18,9 @@ class JointPivotY(Joint):
         q = inputVector[self.usedGeneralizedCoordinates]
 
         self.childLink.relativeOrientation = self.defaultJointOrientation@SrdMath.rotationMatrix3Dy(q)
+
+        if type(inputVector)==SX:
+            self.updateTransformDerivatives(inputVector)
 
         self.forwardKinematicsJointUpdate()
 

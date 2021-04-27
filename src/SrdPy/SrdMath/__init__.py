@@ -15,6 +15,8 @@ from .rotationMatrix3Dz import rotationMatrix3Dz
 from .weightedPseudoinverse import weightedPseudoinverse
 from .rpyToRotationMatrix import rpyToRotationMatrix
 from .TransformHandler3DX_rotation import TransformHandler3DX_rotation
+from .TransformHandler3DY_rotation import TransformHandler3DY_rotation
+from .TransformHandler3DZ_rotation import TransformHandler3DZ_rotation
 
 numberOfWorkers = 8
 simplifyFunctions = True

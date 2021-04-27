@@ -13,4 +13,4 @@ def deriveJSIM(symbolicEngine:SymbolicEngine):
             link.jacobianAngularVelocity.T @ link.inertia @ link.jacobianAngularVelocity
         H = H + linkH
         
-    return simplify(H)
+    return H

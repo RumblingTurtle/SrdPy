@@ -40,6 +40,7 @@ class GroundLink(Link):
         if self.dof==None:
             if type(inputVector)==SX:
                 self.dof = inputVector.size()[0]
-                self.updateDerivatives(inputVector)
             else:
                 self.dof = inputVector.shape[0]
+            
+            self.updateDerivatives(inputVector)
