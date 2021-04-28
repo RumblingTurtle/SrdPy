@@ -26,7 +26,7 @@ from scipy.integrate import solve_ivp
 import os
     
 
-iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./iiwa/iiwa14.urdf"),True)
+iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),True)
 iiwaChain = Chain(iiwaLinks)
 
 
@@ -137,7 +137,33 @@ IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition
 
 ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
-stateHandler = StateHandler(initialPosition, np.zeros(len(initialPosition)))
+timeStep = 1./500
+p.connect(p.GUI)
+p.setGravity(0,0,-9.8)
+p.setTimeStep(timeStep)
+p.getCameraImage(480,320)
+p.setRealTimeSimulation(0)
+
+urdfFlags = p.URDF_USE_SELF_COLLISION
+iiwa = p.loadURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),[0,0,0.48],[0,0,0,1], flags = urdfFlags,useFixedBase=True)
+
+jointIds=[]
+jointNames = []
+
+for j in range (p.getNumJoints(iiwa)):
+    p.changeDynamics(iiwa,j,linearDamping=0, angularDamping=0)
+    info = p.getJointInfo(iiwa,j)
+    jointName = info[1]
+    jointType = info[2]
+    if jointType==p.JOINT_REVOLUTE:
+        jointIds.append(j)
+        jointNames.append(jointName)
+
+jointNames = [link.joint.name for link in iiwaChain.linkArray[1:]]
+jointIds = [id for name,id in zip(jointNames,jointIds) if name in jointNames]
+
+
+stateHandler = BulletStateHandler(iiwa, jointIds)
 gcModelEvaluator = GCModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, stateHandler)
 
 tf = ikSolutionHandler.timeExpiration
@@ -147,7 +173,7 @@ n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 dt = 0.001
 tf = ikSolutionHandler.timeExpiration
 
-simulationHandler = SimulationHandler(np.arange(0, tf, dt))
+simulationHandler = SimulationHandler(np.arange(0, tf, dt),True,timeStep)
 
 desiredStateHandler = DesiredStateHandler(ikSolutionHandler, simulationHandler)
 
@@ -173,33 +199,15 @@ controllerHandlers = [inverseDynamicsHandler,computedTorqueController]
 simulationHandler.preprocessingHandlersArray = preprocessingHandlers
 simulationHandler.controllerArray = controllerHandlers
 
-p.connect(p.GUI)
-p.setGravity(0,0,-9.8)
-p.setTimeStep(1./500)
-urdfFlags = p.URDF_USE_SELF_COLLISION
-iiwa = p.loadURDF(os.path.abspath("./iiwa/iiwa14.urdf"),[0,0,0.48],[0,0,0,1], flags = urdfFlags,useFixedBase=True)
-jointIds=[]
-p.getCameraImage(480,320)
-p.setRealTimeSimulation(0)
-
-for j in range (p.getNumJoints(iiwa)):
-    p.changeDynamics(iiwa,j,linearDamping=0, angularDamping=0)
-    info = p.getJointInfo(iiwa,j)
-    # print(info)
-    jointName = info[1]
-    jointType = info[2]
-    if jointType==p.JOINT_REVOLUTE:
-        jointIds.append(j)
 
 while(1):
     simulationHandler.step()
     u = np.array(computedTorqueController.u).T.tolist()[0]
-    if simulationHandler.currentIndex<len(simulationHandler.timeLog)-1:
-        for j in range (len(u)):
-            p.setJointMotorControl2(iiwa, jointIds[j], p.TORQUE_CONTROL, u[j], force=10)
+    for j in range (len(u)):
+        p.setJointMotorControl2(iiwa, jointIds[j], p.TORQUE_CONTROL, 0, force=u[j])
         
     p.stepSimulation()
 
-    time.sleep(1./200.)
+    time.sleep(timeStep)
 
 

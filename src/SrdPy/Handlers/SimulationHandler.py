@@ -1,13 +1,18 @@
 class SimulationHandler():
     
-    def __init__(self,timeLog):
+    def __init__(self,timeLog,continous=False, timeStep = 1./500.):
         self.timeLog = timeLog
-        self.currentTime = timeLog[0]
+        if continous:
+            self.currentTime = 0
+        else:
+            self.currentTime = timeLog[0]
         self.currentIndex = 0
         self.preprocessingHandlersArray = []
         self.controllerArray = []
         self.solverArray = []
         self.loggerArray = []
+        self.continous = continous
+        self.timeStep = timeStep
 
     def simulate(self):
         for i in range(len(self.timeLog)-1):
@@ -27,7 +32,10 @@ class SimulationHandler():
                 logger.update()
 
     def step(self):
-        self.currentTime = self.timeLog[self.currentIndex]
+        if self.continous:
+            self.currentTime = self.currentTime+self.timeStep
+        else:
+            self.currentTime = self.timeLog[self.currentIndex]
 
         for preprocessor in self.preprocessingHandlersArray:
             preprocessor.update()
