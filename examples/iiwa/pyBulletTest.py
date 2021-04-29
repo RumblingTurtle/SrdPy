@@ -181,20 +181,17 @@ stateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(stateHandler)
 
 desiredStateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(desiredStateHandler)
 
-inverseDynamicsHandler = InverseDynamicsConstrained_QR(
-                        desiredStateHandler,
-                        handlerConstraints,
-                        gcModelEvaluator,
-                        simulationHandler)
-
-computedTorqueController = ComputedTorqueController(stateHandler, desiredStateHandler,
-                                                    gcModelEvaluator, simulationHandler, inverseDynamicsHandler,
-                                                    500 * np.eye(desiredStateHandler.dofRobot),
-                                                    100 * np.eye(desiredStateHandler.dofRobot))
+inverseDynamicsHandler = IDVanillaDesiredTrajectoryHandler(desiredStateHandler, gcModelEvaluator,simulationHandler)
+linearModelEvaluator = LinearModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, handlerLinearizedModel,
+                                                    stateHandler, inverseDynamicsHandler, False)
+computedTorqueController = LQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
+                                         simulationHandler,
+                                         inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
+                                         np.eye(linearModelEvaluator.dofControl))
 
 
 preprocessingHandlers = [desiredStateHandler, stateSpaceHandler, desiredStateSpaceHandler, gcModelEvaluator]
-controllerHandlers = [inverseDynamicsHandler,computedTorqueController]
+controllerHandlers = [inverseDynamicsHandler,linearModelEvaluator,computedTorqueController]
 
 simulationHandler.preprocessingHandlersArray = preprocessingHandlers
 simulationHandler.controllerArray = controllerHandlers
