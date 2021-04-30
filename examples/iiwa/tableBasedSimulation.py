@@ -37,7 +37,7 @@ def my_generateLQRTable(A_table, B_table, Q_table, R_table):
         
     return K_table
 
-iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./iiwa14.urdf"),True)
+iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./examples/iiwa/iiwa14.urdf"),True)
 iiwaChain = Chain(iiwaLinks)
 
 
