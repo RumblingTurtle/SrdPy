@@ -1,3 +1,5 @@
+import pybullet as p
+import time
 from SrdPy.URDFUtils import getLinkArrayFromURDF
 
 from SrdPy.TableGenerators import generateConstraiedLinearModelTable
@@ -15,7 +17,6 @@ from SrdPy import SymbolicEngine
 from SrdPy import plotGeneric
 from copy import deepcopy
 from casadi import *
-from SrdPy import save,get
 
 from SrdPy.TableGenerators import *
 from SrdPy import Chain
@@ -24,24 +25,9 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import os
     
-from control import lqr
-def my_generateLQRTable(A_table, B_table, Q_table, R_table):
-    count = A_table.shape[0]
-    n = A_table.shape[2]
-    m = B_table.shape[2]
-
-    K_table = np.zeros((count,m,n))
-
-    for i in range(count):
-        K, S, CLP =  lqr(A_table[i], B_table[i], Q_table[i], R_table[i])
-        K_table[i] = K
-        
-    return K_table
 
 iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),True)
 iiwaChain = Chain(iiwaLinks)
-
-import pickle
 
 
 print(iiwaChain)
@@ -50,7 +36,6 @@ blank_chain = deepcopy(iiwaChain)
 blank_chain.update(initialPosition)
 
 engine = SymbolicEngine(iiwaChain.linkArray)
-
 
 deriveJacobiansForlinkArray(engine)
 H = deriveJSIM(engine)
@@ -73,8 +58,6 @@ description_gen_coord_model = generateDynamicsGeneralizedCoordinatesModel(engine
 
 handlerGeneralizedCoordinatesModel = GeneralizedCoordinatesModelHandler(description_gen_coord_model)
 
-save(handlerGeneralizedCoordinatesModel,"gcModel")
-
 description_linearization = generateDynamicsLinearization(engine,
                                                             H=H,
                                                             c=(iN + g + d),
@@ -87,13 +70,24 @@ description_linearization = generateDynamicsLinearization(engine,
                                                             
 handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
-save(handlerLinearizedModel,"linearizedModel")
-
 constraint6 = engine.links["iiwa_link_6"].absoluteFollower[0]
 
 task = constraint6[:2]
 print("task size is: ", task.size)
 
+constraint = engine.links["iiwa_link_0"].absoluteFollower[0]
+
+constraint = constraint #horizontal stack of row vectors
+
+description_constraints = generateSecondDerivativeJacobians(engine,
+                                                            task=constraint,
+                                                            functionName_Task="g_Constraint",
+                                                            functionName_TaskJacobian="g_Constraint_Jacobian",
+                                                            functionName_TaskJacobianDerivative="g_Constraint_Jacobian_derivative",
+                                                            casadi_cCodeFilename="g_Constraints",
+                                                            path="./iiwa/Constraints")
+
+handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof)
 
 description_IK = generateSecondDerivativeJacobians(engine,
                                                 task=task,
@@ -104,8 +98,6 @@ description_IK = generateSecondDerivativeJacobians(engine,
                                                 path="./iiwa/InverseKinematics")
 
 ikModelHandler = IKModelHandler(description_IK, engine.dof, task.shape[0])
-
-save(ikModelHandler,"ikModelHandler")
 
 IC_task = ikModelHandler.getTask(initialPosition)
 
@@ -121,7 +113,6 @@ task_3 = np.array([[0.3],
                 [0.1]])
 
 zeroOrderDerivativeNodes = np.hstack((IC_task.T, task_1, task_2, task_3))
-
 
 firstOrderDerivativeNodes = np.zeros(zeroOrderDerivativeNodes.shape)
 
@@ -139,61 +130,80 @@ handlerIK_taskSplines = IKtaskSplinesHandler(nodeTimes,
                                                 secondOrderDerivativeNodes)
 
 
-save(handlerIK_taskSplines,"handlerIK_taskSplines")
-
 timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
 
-IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialSPosition, timeTable, method="lsqnonlin")
-plotIKTable(ikModelHandler, timeTable, IKTable)
+IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
 
 ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
-save(ikSolutionHandler,"ikSolutionHandler")
+timeStep = 1./500
+p.connect(p.GUI)
+p.setGravity(0,0,-9.8)
+p.setTimeStep(timeStep)
+p.getCameraImage(480,320)
+p.setRealTimeSimulation(0)
+
+urdfFlags = p.URDF_USE_SELF_COLLISION
+iiwa = p.loadURDF(os.path.abspath("./SrdPy/examples/a1/a1.urdf"),[0,0,0.48],[0,0,0,1], flags = urdfFlags,useFixedBase=True)
+
+jointIds=[]
+jointNames = []
+
+for j in range (p.getNumJoints(iiwa)):
+    p.changeDynamics(iiwa,j,linearDamping=0, angularDamping=0)
+    info = p.getJointInfo(iiwa,j)
+    jointName = info[1]
+    jointType = info[2]
+    if jointType==p.JOINT_REVOLUTE:
+        jointIds.append(j)
+        jointNames.append(jointName)
+
+jointNames = [link.joint.name for link in iiwaChain.linkArray[1:]]
+jointIds = [id for name,id in zip(jointNames,jointIds) if name in jointNames]
+
+
+stateHandler = BulletStateHandler(iiwa, jointIds)
+gcModelEvaluator = GCModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, stateHandler)
 
 tf = ikSolutionHandler.timeExpiration
 
 n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 
-A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,ikSolutionHandler,timeTable)
+dt = 0.001
+tf = ikSolutionHandler.timeExpiration
 
-Q = 10*np.eye(2 * n)
-R = 0.1*np.eye(handlerGeneralizedCoordinatesModel.dofControl)
-count = A_table.shape[0]
+simulationHandler = SimulationHandler(np.arange(0, tf, dt),True,timeStep)
 
-С = np.concatenate((np.eye(n), np.zeros((n, n))), axis=1)
-#y = C*x
+desiredStateHandler = DesiredStateHandler(ikSolutionHandler, simulationHandler)
+
+stateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(stateHandler)
+
+desiredStateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(desiredStateHandler)
+
+inverseDynamicsHandler = IDVanillaDesiredTrajectoryHandler(desiredStateHandler, gcModelEvaluator,simulationHandler)
+linearModelEvaluator = LinearModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, handlerLinearizedModel,
+                                                    stateHandler, inverseDynamicsHandler, False)
+computedTorqueController = LQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
+                                         simulationHandler,
+                                         inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
+                                         np.eye(linearModelEvaluator.dofControl))
 
 
-K_table = my_generateLQRTable(A_table, B_table, np.tile(Q, [count,1, 1]), np.tile(R, [ count, 1, 1]))
-AA_table, cc_table = generateCloseLoopTable(A_table, B_table, c_table, K_table, x_table, u_table)
-ode_fnc_handle = ClosedLoopLinearSystemOdeFunctionHandler(AA_table, cc_table, timeTable)
+preprocessingHandlers = [desiredStateHandler, stateSpaceHandler, desiredStateSpaceHandler, gcModelEvaluator]
+controllerHandlers = [inverseDynamicsHandler,linearModelEvaluator,computedTorqueController]
 
-x0 = np.hstack((initialPosition, np.zeros(initialPosition.shape[0])))
+simulationHandler.preprocessingHandlersArray = preprocessingHandlers
+simulationHandler.controllerArray = controllerHandlers
 
-sol = solve_ivp(ode_fnc_handle, [0, tf], x0, t_eval=timeTable,method="RK45")
 
-time_table_0 = sol.t
-solution_tape = sol.y.T
+while(1):
+    simulationHandler.step()
+    u = np.array(computedTorqueController.u).T.tolist()[0]
+    for j in range (len(u)):
+        p.setJointMotorControl2(iiwa, jointIds[j], p.TORQUE_CONTROL, 0, force=u[j])
+        
+    p.stepSimulation()
 
-ax = plotGeneric(time_table_0,solution_tape,figureTitle="",ylabel="ODE")
-ax = plotGeneric(timeTable,x_table,ylabel="linearmodel",old_ax = ax, plot=True)
+    time.sleep(timeStep)
 
-ax = plotGeneric(timeTable,solution_tape[:,:n],figureTitle="position",ylabel="q", plot=True)
-ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel="v", plot=True)
 
-with open('anim_array.npy', 'wb') as f:
-    np.save(f, solution_tape[:,:n])
-    
-chainLinks = getLinkArrayFromURDF(os.path.abspath("./iiwa14.urdf"),True)
-chain = Chain(chainLinks)
-
-print(chain)
-blank_chain = deepcopy(chain)
-blank_chain.update(initialPosition)
-with open('anim_array.npy', 'rb') as f:
-    q = np.load(f)
-
-blank_chain.update(q[0])
-plotGeneric(np.arange(q.shape[0]),q,plot=True)
-vis = Visualizer()
-vis.animate(blank_chain,q,framerate=0.1,showMeshes=True)
