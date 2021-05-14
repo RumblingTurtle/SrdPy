@@ -87,6 +87,10 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
             else:
                 print("No mesh assigned for: "+name)
 
+        if link.visual!=None:
+            if isinstance(link.visual.geometry,(urdf_parser_py.urdf.Cylinder,urdf_parser_py.urdf.Box,urdf_parser_py.urdf.Sphere)):
+                newLink.primitiveObj = link.visual.geometry
+                
         chainArray = robot.get_chain(robot.get_root(),link.name, joints=False, links=True, fixed=True)
         newLink.order = len(chainArray)
 
