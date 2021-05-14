@@ -8,6 +8,7 @@ Source: https://github.com/SergeiSa/SRD
 + slycot 
 + urdf-parser-py
 + pyngrok
++ pybullet
 + qpsolvers
 
 And meshcat installed from git
