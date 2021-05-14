@@ -15,7 +15,8 @@ from SrdPy import SymbolicEngine
 from SrdPy import plotGeneric
 from copy import deepcopy
 from casadi import *
-
+from SrdPy import save,get
+from SrdPy.SrdMath import *
 from SrdPy.TableGenerators import *
 from SrdPy import Chain
 from SrdPy import Profiler
@@ -37,8 +38,12 @@ def my_generateLQRTable(A_table, B_table, Q_table, R_table):
         
     return K_table
 
+
 iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./examples/iiwa/iiwa14.urdf"),True)
+
 iiwaChain = Chain(iiwaLinks)
+
+import pickle
 
 
 print(iiwaChain)
@@ -48,8 +53,11 @@ blank_chain.update(initialPosition)
 
 engine = SymbolicEngine(iiwaChain.linkArray)
 
+
 deriveJacobiansForlinkArray(engine)
 H = deriveJSIM(engine)
+
+C = deriveCmatrixViaChristoffel(engine,H)
 
 iN, dH = deriveGeneralizedInertialForces_dH(engine, H)
 g = deriveGeneralizedGravitationalForces(engine)
@@ -69,6 +77,8 @@ description_gen_coord_model = generateDynamicsGeneralizedCoordinatesModel(engine
 
 handlerGeneralizedCoordinatesModel = GeneralizedCoordinatesModelHandler(description_gen_coord_model)
 
+save(handlerGeneralizedCoordinatesModel,"gcModel")
+
 description_linearization = generateDynamicsLinearization(engine,
                                                             H=H,
                                                             c=(iN + g + d),
@@ -80,6 +90,8 @@ description_linearization = generateDynamicsLinearization(engine,
                                                             path="./iiwa/Linearization")
                                                             
 handlerLinearizedModel = LinearizedModelHandler(description_linearization)
+
+save(handlerLinearizedModel,"linearizedModel")
 
 constraint6 = engine.links["iiwa_link_6"].absoluteFollower[0]
 
@@ -96,6 +108,8 @@ description_IK = generateSecondDerivativeJacobians(engine,
                                                 path="./iiwa/InverseKinematics")
 
 ikModelHandler = IKModelHandler(description_IK, engine.dof, task.shape[0])
+
+save(ikModelHandler,"ikModelHandler")
 
 IC_task = ikModelHandler.getTask(initialPosition)
 
@@ -129,12 +143,16 @@ handlerIK_taskSplines = IKtaskSplinesHandler(nodeTimes,
                                                 secondOrderDerivativeNodes)
 
 
+save(handlerIK_taskSplines,"handlerIK_taskSplines")
+
 timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
 
-IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
+IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialSPosition, timeTable, method="lsqnonlin")
 plotIKTable(ikModelHandler, timeTable, IKTable)
 
 ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
+
+save(ikSolutionHandler,"ikSolutionHandler")
 
 tf = ikSolutionHandler.timeExpiration
 

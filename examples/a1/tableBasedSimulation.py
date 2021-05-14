@@ -24,7 +24,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import os
 
-a1Links = getLinkArrayFromURDF(os.path.abspath("./a1/urdf/a1.urdf"),True)
+a1Links = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/a1/a1/urdf/a1.urdf"),True)
 a1Chain = Chain(a1Links)
 blank_chain = deepcopy(a1Chain)
 print(a1Chain)
@@ -53,6 +53,7 @@ description_gen_coord_model = generateDynamicsGeneralizedCoordinatesModel(engine
                                                                             path="./a1/Dynamics")
 
 handlerGeneralizedCoordinatesModel = GeneralizedCoordinatesModelHandler(description_gen_coord_model)
+
 
 
 description_linearization = generateDynamicsLinearization(engine,

@@ -1,7 +1,6 @@
+from SrdPy.URDFUtils import getLinkArrayFromURDF
 import pybullet as p
 import time
-from SrdPy.URDFUtils import getLinkArrayFromURDF
-
 from SrdPy.TableGenerators import generateConstraiedLinearModelTable
 from SrdPy.TableGenerators import generateLinearModelTable
 from SrdPy.LinksAndJoints import *
@@ -24,18 +23,14 @@ from SrdPy import Profiler
 import numpy as np
 from scipy.integrate import solve_ivp
 import os
-    
 
-iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),True)
-iiwaChain = Chain(iiwaLinks)
+a1Links = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/a1/urdf/a1.urdf"),True)
+a1Chain = Chain(a1Links)
 
+print(a1Chain)
+initialPosition = np.zeros(18)
 
-print(iiwaChain)
-initialPosition = np.zeros(7)
-blank_chain = deepcopy(iiwaChain)
-blank_chain.update(initialPosition)
-
-engine = SymbolicEngine(iiwaChain.linkArray)
+engine = SymbolicEngine(a1Chain.linkArray)
 
 deriveJacobiansForlinkArray(engine)
 H = deriveJSIM(engine)
@@ -43,7 +38,7 @@ H = deriveJSIM(engine)
 iN, dH = deriveGeneralizedInertialForces_dH(engine, H)
 g = deriveGeneralizedGravitationalForces(engine)
 d = deriveGeneralizedDissipativeForcesUniform(engine, 1)
-T = deriveControlMap(engine)
+T = deriveControlMapFloating(engine)
 
 
 description_gen_coord_model = generateDynamicsGeneralizedCoordinatesModel(engine,
@@ -54,9 +49,10 @@ description_gen_coord_model = generateDynamicsGeneralizedCoordinatesModel(engine
                                                                             functionName_c="g_dynamics_c",
                                                                             functionName_T="g_dynamics_T",
                                                                             casadi_cCodeFilename="g_dynamics_generalized_coordinates",
-                                                                            path="./iiwa/Dynamics")
+                                                                            path="./a1/Dynamics")
 
 handlerGeneralizedCoordinatesModel = GeneralizedCoordinatesModelHandler(description_gen_coord_model)
+
 
 description_linearization = generateDynamicsLinearization(engine,
                                                             H=H,
@@ -66,18 +62,19 @@ description_linearization = generateDynamicsLinearization(engine,
                                                             functionName_B="g_linearization_B",
                                                             functionName_c="g_linearization_c",
                                                             casadi_cCodeFilename="g_dynamics_linearization",
-                                                            path="./iiwa/Linearization")
+                                                            path="./a1/Linearization")
                                                             
 handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
-constraint6 = engine.links["iiwa_link_6"].absoluteFollower[0]
 
-task = constraint6[:2]
-print("task size is: ", task.size)
+constraint1 = engine.links["RL_calf"].absoluteFollower[0]
+constraint2 = engine.links["RR_calf"].absoluteFollower[0]
+constraint3 = engine.links["FL_calf"].absoluteFollower[0]
+constraint4 = engine.links["FR_calf"].absoluteFollower[0]
+constraint5 = engine.links["FR_thigh"].absoluteFollower[0]
 
-constraint = engine.links["iiwa_link_0"].absoluteFollower[0]
-
-constraint = constraint #horizontal stack of row vectors
+constraint = np.hstack([[constraint1[0],constraint1[2]], constraint2,constraint3])
+print("constraint size is: ", constraint.size)
 
 description_constraints = generateSecondDerivativeJacobians(engine,
                                                             task=constraint,
@@ -85,9 +82,15 @@ description_constraints = generateSecondDerivativeJacobians(engine,
                                                             functionName_TaskJacobian="g_Constraint_Jacobian",
                                                             functionName_TaskJacobianDerivative="g_Constraint_Jacobian_derivative",
                                                             casadi_cCodeFilename="g_Constraints",
-                                                            path="./iiwa/Constraints")
+                                                            path="./a1/Constraints")
 
 handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof)
+
+CoM = a1Chain.getCoM()
+
+task = np.hstack([constraint5,constraint4,constraint])
+print("task size is: ", task.size)
+
 
 description_IK = generateSecondDerivativeJacobians(engine,
                                                 task=task,
@@ -95,31 +98,30 @@ description_IK = generateSecondDerivativeJacobians(engine,
                                                 functionName_TaskJacobian="g_InverseKinematics_TaskJacobian",
                                                 functionName_TaskJacobianDerivative="g_InverseKinematics_TaskJacobian_derivative",
                                                 casadi_cCodeFilename="g_InverseKinematics",
-                                                path="./iiwa/InverseKinematics")
+                                                path="./a1/InverseKinematics")
 
 ikModelHandler = IKModelHandler(description_IK, engine.dof, task.shape[0])
 
+
 IC_task = ikModelHandler.getTask(initialPosition)
 
-IC_task = np.reshape(IC_task,[1,2])
+ikOffset = np.zeros(IC_task.shape[0])
+ikOffset[0] = 0.2
+ikOffset[1] = 0
+ikOffset[2] = 0.2
 
-task_1 = np.array([[0.1],
-                [0.3]])
+ikOffset[3] = 0.2
+ikOffset[4] = 0
+ikOffset[5] = 0.1
 
-task_2 = np.array([[0.3],
-                [0.3]])
-
-task_3 = np.array([[0.3],
-                [0.1]])
-
-zeroOrderDerivativeNodes = np.hstack((IC_task.T, task_1, task_2, task_3))
+zeroOrderDerivativeNodes = np.hstack((IC_task,IC_task+ikOffset))
 
 firstOrderDerivativeNodes = np.zeros(zeroOrderDerivativeNodes.shape)
 
 secondOrderDerivativeNodes = np.zeros(zeroOrderDerivativeNodes.shape)
 
 
-timeOfOneStage = 2
+timeOfOneStage = 4
 timeEnd = (len(zeroOrderDerivativeNodes[1]) - 1) * timeOfOneStage + 1
 nodeTimes = np.arange(start=0, stop=timeEnd, step=timeOfOneStage)
 
@@ -130,10 +132,15 @@ handlerIK_taskSplines = IKtaskSplinesHandler(nodeTimes,
                                                 secondOrderDerivativeNodes)
 
 
+
 timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.timeExpiration + 0.01, 0.01)
 
-IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
 
+IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
+#plotIKTable(ikModelHandler, timeTable, IKTable)
+
+
+n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 
 ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
@@ -143,11 +150,9 @@ p.setGravity(0,0,-9.8)
 p.setTimeStep(timeStep)
 p.getCameraImage(480,320)
 p.setRealTimeSimulation(0)
-
+plane = p.loadURDF("./SrdPy/examples/a1/plane.urdf")
 urdfFlags = p.URDF_USE_SELF_COLLISION
-
-iiwa = p.loadURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),[0,0,0.48],[0,0,0,1], flags = urdfFlags,useFixedBase=True)
-
+iiwa = p.loadURDF(os.path.abspath("./SrdPy/examples/a1/urdf/a1.urdf"),[0,0,0.45],[0,0,0,1], flags = urdfFlags,useFixedBase=False)
 
 jointIds=[]
 jointNames = []
@@ -161,11 +166,11 @@ for j in range (p.getNumJoints(iiwa)):
         jointIds.append(j)
         jointNames.append(jointName)
 
-jointNames = [link.joint.name for link in iiwaChain.linkArray[1:]]
+jointNames = [link.joint.name for link in a1Chain.linkArray[1:]]
 jointIds = [id for name,id in zip(jointNames,jointIds) if name in jointNames]
 
 
-stateHandler = BulletStateHandler(iiwa, jointIds)
+stateHandler = BulletStateHandler(iiwa, jointIds,True)
 gcModelEvaluator = GCModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, stateHandler)
 
 tf = ikSolutionHandler.timeExpiration
@@ -183,7 +188,12 @@ stateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(stateHandler)
 
 desiredStateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(desiredStateHandler)
 
-inverseDynamicsHandler = IDVanillaDesiredTrajectoryHandler(desiredStateHandler, gcModelEvaluator,simulationHandler)
+inverseDynamicsHandler = InverseDynamicsConstrained_QR(
+                        desiredStateHandler,
+                        handlerConstraints,
+                        gcModelEvaluator,
+                        simulationHandler)
+
 linearModelEvaluator = LinearModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, handlerLinearizedModel,
                                                     stateHandler, inverseDynamicsHandler, False)
 computedTorqueController = LQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
@@ -202,7 +212,8 @@ simulationHandler.controllerArray = controllerHandlers
 while(1):
     simulationHandler.step()
     u = np.array(computedTorqueController.u).T.tolist()[0]
-    for j in range (len(u)):
+
+    for j in range (len(u[6:])):
         p.setJointMotorControl2(iiwa, jointIds[j], p.TORQUE_CONTROL, 0, force=u[j])
         
     p.stepSimulation()

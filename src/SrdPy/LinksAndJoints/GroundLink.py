@@ -23,6 +23,7 @@ class GroundLink(Link):
         self.absoluteOrientationDerivative = np.zeros(3)
         self.angularVelocity = np.array([0,0,0])
         self.meshObj = None
+        self.primitiveObj = None
 
     def addFollower(self,follower):
         if self.relativeFollower.shape[0]==0:

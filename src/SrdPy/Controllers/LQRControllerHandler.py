@@ -22,7 +22,7 @@ class LQRControllerHandler():
         A = self.linearizedModelHandler.getA()
         B = self.linearizedModelHandler.getB()
 
-        K, S, CLP = lqr(A, B.T, self.Q, self.R)
+        K, S, CLP = lqr(A, B, self.Q, self.R)
 
         e = (self.stateSpaceHandler.x - x)
 

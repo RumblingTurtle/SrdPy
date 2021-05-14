@@ -12,5 +12,6 @@ from SrdPy.SymbolicUtils.deriveJSIM import deriveJSIM
 from SrdPy.SymbolicUtils.generateDynamicsLinearization import generateDynamicsLinearization
 from SrdPy.SymbolicUtils.generateDynamicsGeneralizedCoordinatesModel import generateDynamicsGeneralizedCoordinatesModel
 from SrdPy.SymbolicUtils.generateSecondDerivativeJacobians import generateSecondDerivativeJacobians
+from SrdPy.SymbolicUtils.deriveCmatrixViaChristoffel import deriveCmatrixViaChristoffel
 
 

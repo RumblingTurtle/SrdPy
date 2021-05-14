@@ -121,6 +121,3 @@ class SplineConstructor():
         for i in range(self.numberOfSplines):
             a[i] = self.splineArray[2][i].evaluate(t,0)
         return a
-
-    def evaluateAll(self, t):
-        return evaluateQ(t),evaluateV(t),evaluateA(t)

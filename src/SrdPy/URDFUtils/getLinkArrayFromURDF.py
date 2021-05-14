@@ -44,21 +44,27 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
     print("Parsing URDF:"+path)
     print("Root node: "+root_link)
     for link in robot.links:
-
         if link.name == robot.get_root():
             linkParserMap[link.name] = (linkDict[root_link],link)
             continue
         
-        if link.inertial==None or link.inertial.origin==None:
+        
+        if link.inertial!=None: 
+            inertia = link.inertial.inertia
+            if link.inertial.origin==None:
+                relativeCOM = [0,0,0]
+            else:
+                relativeCOM = link.inertial.origin.xyz
+            mass = link.inertial.mass
+        else:
             continue
-
+        
         name = link.name
-        inertia = link.inertial.inertia
+        
 
         inertiaMatrix = getInertiaMatrixFromValues(inertia.ixx,inertia.ixy,inertia.ixz,
                                                    inertia.iyy,inertia.iyz,inertia.izz)
-        relativeCOM = link.inertial.origin.xyz
-        mass = link.inertial.mass
+
 
 
         newLink = Link(name=name,order=order,
@@ -81,8 +87,13 @@ def getLinkArrayFromURDF(path,parseMeshses=False):
             else:
                 print("No mesh assigned for: "+name)
 
+        if link.visual!=None:
+            if isinstance(link.visual.geometry,(urdf_parser_py.urdf.Cylinder,urdf_parser_py.urdf.Box,urdf_parser_py.urdf.Sphere)):
+                newLink.primitiveObj = link.visual.geometry
+                
         chainArray = robot.get_chain(robot.get_root(),link.name, joints=False, links=True, fixed=True)
         newLink.order = len(chainArray)
+
 
         linkDict[name] = newLink
         linkArray.append(newLink)
