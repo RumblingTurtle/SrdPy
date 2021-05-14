@@ -1,6 +1,7 @@
 import numpy as np
 import pybullet as p
 class BulletStateHandler():
+
     def __init__(self,bodyId,jointIds,floatingFirst=False):
         self.bodyId = bodyId
         self.jointIds = jointIds

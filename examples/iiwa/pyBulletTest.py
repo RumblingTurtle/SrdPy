@@ -134,6 +134,7 @@ timeTable = np.arange(handlerIK_taskSplines.timeStart, handlerIK_taskSplines.tim
 
 IKTable = generateIKTable(ikModelHandler, handlerIK_taskSplines, initialPosition, timeTable, method="lsqnonlin")
 
+
 ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
 timeStep = 1./500
@@ -144,7 +145,9 @@ p.getCameraImage(480,320)
 p.setRealTimeSimulation(0)
 
 urdfFlags = p.URDF_USE_SELF_COLLISION
-iiwa = p.loadURDF(os.path.abspath("./SrdPy/examples/a1/a1.urdf"),[0,0,0.48],[0,0,0,1], flags = urdfFlags,useFixedBase=True)
+
+iiwa = p.loadURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),[0,0,0.48],[0,0,0,1], flags = urdfFlags,useFixedBase=True)
+
 
 jointIds=[]
 jointNames = []

@@ -38,7 +38,9 @@ def my_generateLQRTable(A_table, B_table, Q_table, R_table):
         
     return K_table
 
-iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./SrdPy/examples/iiwa/iiwa14.urdf"),True)
+
+iiwaLinks = getLinkArrayFromURDF(os.path.abspath("./examples/iiwa/iiwa14.urdf"),True)
+
 iiwaChain = Chain(iiwaLinks)
 
 import pickle
@@ -158,12 +160,13 @@ n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 
 A_table, B_table, c_table, x_table, u_table, dx_table = generateLinearModelTable(handlerGeneralizedCoordinatesModel,handlerLinearizedModel,ikSolutionHandler,timeTable)
 
+
+
+print("Started experiment")
+
 Q = 10*np.eye(2 * n)
 R = 0.1*np.eye(handlerGeneralizedCoordinatesModel.dofControl)
 count = A_table.shape[0]
-
-С = np.concatenate((np.eye(n), np.zeros((n, n))), axis=1)
-#y = C*x
 
 
 K_table = my_generateLQRTable(A_table, B_table, np.tile(Q, [count,1, 1]), np.tile(R, [ count, 1, 1]))
@@ -186,7 +189,7 @@ ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel=
 with open('anim_array.npy', 'wb') as f:
     np.save(f, solution_tape[:,:n])
     
-chainLinks = getLinkArrayFromURDF(os.path.abspath("./iiwa14.urdf"),True)
+chainLinks = getLinkArrayFromURDF(os.path.abspath("./examples/iiwa/iiwa14.urdf"),True)
 chain = Chain(chainLinks)
 
 print(chain)
@@ -199,3 +202,6 @@ blank_chain.update(q[0])
 plotGeneric(np.arange(q.shape[0]),q,plot=True)
 vis = Visualizer()
 vis.animate(blank_chain,q,framerate=0.1,showMeshes=True)
+
+
+print("Done")

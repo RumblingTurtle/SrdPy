@@ -6,3 +6,4 @@ slycot~=0.4.0
 urdf-parser-py~=0.0.3
 pyngrok~=5.0.5
 qpsolvers~=1.6.1
+pybullet~=3.1.7
