@@ -16,7 +16,7 @@ from SrdPy import plotGeneric
 from copy import deepcopy
 from casadi import *
 from SrdPy import save,get
-
+from SrdPy.SrdMath import *
 from SrdPy.TableGenerators import *
 from SrdPy import Chain
 from SrdPy import Profiler
@@ -54,6 +54,8 @@ engine = SymbolicEngine(iiwaChain.linkArray)
 
 deriveJacobiansForlinkArray(engine)
 H = deriveJSIM(engine)
+
+C = deriveCmatrixViaChristoffel(engine,H)
 
 iN, dH = deriveGeneralizedInertialForces_dH(engine, H)
 g = deriveGeneralizedGravitationalForces(engine)
