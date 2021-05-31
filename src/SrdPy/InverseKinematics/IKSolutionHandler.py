@@ -11,7 +11,7 @@ class IKSolutionHandler():
         self.dofRobot = self.IKModelHandler.dofRobot
         self.timeStart = max(self.IKModelHandler.timeStart,self.IKTaskHandler.timeStart)
         self.timeExpiration = min(self.IKModelHandler.timeExpiration,self.IKTaskHandler.timeExpiration)
-        self.interpolator = interpolate.interp1d(x=self.timeTable,y=self.IKTable,axis=0,kind=self.method)
+        self.interpolator = interpolate.interp1d(x=self.timeTable,y=self.IKTable,axis=0,kind=self.method,bounds_error=False,fill_value=(self.IKTable[0],self.IKTable[-1]))
 
     def getPosition(self,t):
         return self.interpolator(t)

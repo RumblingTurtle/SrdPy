@@ -21,6 +21,7 @@ setup(name="SrdPy",
       "slycot",
       "urdf-parser-py",
       "pyngrok",
-      "qpsolvers"
+      "qpsolvers",
+      "pybullet"
     ]
 )

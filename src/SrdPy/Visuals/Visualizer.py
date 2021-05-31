@@ -5,6 +5,8 @@ from meshcat.animation import Animation
 from SrdPy.Visuals import getCylinderTransform
 import meshcat
 import sys
+import urdf_parser_py.urdf as primitives
+
 class Visualizer:
     def __init__(self):
         pass
@@ -34,21 +36,28 @@ class Visualizer:
                 boxVis.set_transform(tf.translation_matrix(link.absoluteBase)@rotationMatrix)
 
         else:
-            boxVis = vis["links"]
+                    
+
+            for i,link in enumerate(chain.linkArray):
+                
+                boxVis = vis["link:"+link.name]
+                if link.primitiveObj != None:
+                    if isinstance(link.primitiveObj,primitives.Box):
+                        box = meshcat.geometry.Box(link.primitiveObj.size)
+                        boxVis.set_object(box)
+                    if isinstance(link.primitiveObj,primitives.Cylinder):
+                        cylinder = meshcat.geometry.Cylinder(link.primitiveObj.length,link.primitiveObj.radius)
+                        boxVis.set_object(cylinder)
+                    if isinstance(link.primitiveObj,primitives.Sphere):
+                        sphere = meshcat.geometry.Sphere(link.primitiveObj.radius)
+                        boxVis.set_object(cylinder)
+                    rotationMatrix = np.pad(link.absoluteOrientation, [(0, 1), (0, 1)], mode='constant')
+                    rotationMatrix[-1][-1] = 1
+                    boxVis.set_transform(tf.translation_matrix(link.absoluteBase)@rotationMatrix)
+            
+            boxVis = vis["skeleton"]
             boxVis.set_object(g.Line(g.PointsGeometry(chain.get_vertex_coords().T)))
-            return
-            vertices = chain.get_vertex_coords()
-
-            for i in range(int(vertices.shape[0]/2)):
-                p1 = vertices[2*i]
-                p2 = vertices[2*i+1]
-
-                cylinder_transform = getCylinderTransform(p1,p2)
-                boxVis = vis["link"+str(i)]
-                boxVis.set_object(g.Cylinder(1, 0.01))
-                boxVis.set_transform(cylinder_transform)
-
-
+            
 
     def animate(self,chain,states,framerate = 5,showMeshes=False):
         if 'google.colab' in sys.modules:

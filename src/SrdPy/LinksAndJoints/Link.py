@@ -63,6 +63,7 @@ class Link:
         #dynamically added additional parameters
         self.calculated = []
         self.meshObj = None
+        self.primitiveObj = None
 
     def update(self,q):
         self.joint.update(q)
