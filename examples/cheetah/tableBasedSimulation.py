@@ -23,7 +23,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import os
 
-cheetahLinks = getLinkArrayFromURDF(os.path.abspath("./cheetah/urdf/cheetah.urdf"),True)
+cheetahLinks = getLinkArrayFromURDF(os.path.abspath(os.path.dirname(sys.argv[0])+"/cheetah/urdf/cheetah.urdf"),True)
 cheetahChain = Chain(cheetahLinks)
 remap = [
 'trunk',
@@ -161,9 +161,7 @@ plotIKTable(ikModelHandler, timeTable, IKTable)
 
 
 n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
-with open('anim_array.npy', 'wb') as f:
-    np.save(f, IKTable[:,:n])
-return
+
 ikSolutionHandler = IKSolutionHandler(ikModelHandler, handlerIK_taskSplines, timeTable, IKTable, "linear")
 
 
@@ -201,3 +199,15 @@ ax = plotGeneric(timeTable,solution_tape[:,n:2*n],figureTitle="velocity",ylabel=
 
 with open('anim_array.npy', 'wb') as f:
     np.save(f, solution_tape[:,:n])
+
+initialPosition = np.zeros(18)
+blank_chain = deepcopy(cheetahChain)
+blank_chain.update(initialPosition)
+
+with open('anim_array.npy', 'rb') as f:
+    q = np.load(f)
+
+vis = Visualizer()
+vis.animate(blank_chain,q,framerate=0.1,showMeshes=True)
+
+input() 
