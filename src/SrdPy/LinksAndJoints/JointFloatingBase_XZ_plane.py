@@ -15,9 +15,9 @@ class JointFloatingBase_XZ_plane(Joint):
     def update(self,inputVector):
         q = inputVector[self.usedGeneralizedCoordinates]
 
-        self.childLink.relativeOrientation =  SrdMath.rotationMatrix3Dy(q[0])
+        self.childLink.relativeOrientation =  SrdMath.rotationMatrix3Dy(q[2])
         
-        self.childLink.absoluteBase = self.parentLink.absoluteFollower[self.parentFollowerNumber]+np.array([q[1],0,q[2]])
+        self.childLink.absoluteBase = self.parentLink.absoluteFollower[self.parentFollowerNumber]+np.array([q[0],0,q[1]])
         self.childLink.absoluteOrientation = self.parentLink.absoluteOrientation@self.childLink.relativeOrientation
 
         rBaseToFollower = self.childLink.relativeFollower - np.matlib.repmat(self.childLink.relativeBase,self.childLink.relativeFollower.shape[0],1)
