@@ -1,6 +1,9 @@
 # Serial Robot Dynamics port to python
 Source: https://github.com/SergeiSa/SRD
 
+
+### Supported Python versions 3.6-3.7
+
 ### Required packages:
 + numpy
 + casadi
