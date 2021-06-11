@@ -13,7 +13,7 @@ def deriveGeneralizedGravitationalForces(symbolicEngine:SymbolicEngine, gravitat
     G = SX.zeros(symbolicEngine.dof, 1)
 
     for link in symbolicEngine.linkArray:
-        G = G +link.mass * link.jacobianCenterOfMass.T @ gravitationalConstant
+        G = G - link.mass * link.jacobianCenterOfMass.T @ gravitationalConstant
 
     G = simplify(G)
 

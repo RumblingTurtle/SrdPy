@@ -203,5 +203,4 @@ plotGeneric(np.arange(q.shape[0]),q,plot=True)
 vis = Visualizer()
 vis.animate(blank_chain,q,framerate=0.1,showMeshes=True)
 
-
-print("Done")
+input()

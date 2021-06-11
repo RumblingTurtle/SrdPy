@@ -16,6 +16,7 @@ from SrdPy.SrdMath.rotationMatrix3Dy import rotationMatrix3Dy
 from SrdPy.SrdMath.rotationMatrix3Dz import rotationMatrix3Dz
 from SrdPy.SrdMath.weightedPseudoinverse import weightedPseudoinverse
 from SrdPy.SrdMath.rpyToRotationMatrix import rpyToRotationMatrix
+from SrdPy.SrdMath.matrixJacobianTimesVector import matrixJacobianTimesVector
 
 
 numberOfWorkers = 8

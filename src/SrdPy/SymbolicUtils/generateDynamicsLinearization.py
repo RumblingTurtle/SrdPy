@@ -1,5 +1,6 @@
 from casadi import *
 from SrdPy import SymbolicEngine
+from SrdPy.SrdMath import matrixJacobianTimesVector
 import pickle
 import os
 import sys
@@ -57,7 +58,7 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
     TCq = jacobian(TuPc, q)
     TCv = jacobian(TuPc, v)
 
-    dfdq = -iH@reshape(jtimes(H, q,iH@TuPc), n, n) + TCq
+    dfdq = -iH@matrixJacobianTimesVector(H,q,iH@(T@u-c))+iH@TCq
 
     dfdv = iH @ TCv
 
