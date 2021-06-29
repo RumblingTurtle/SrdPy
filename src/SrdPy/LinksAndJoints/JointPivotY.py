@@ -1,6 +1,6 @@
-from SrdPy import SrdMath
+from SrdPy import Math
 from SrdPy.LinksAndJoints import Joint
-
+import numpy as np
 class JointPivotY(Joint):
     def __init__(self, name, childLink, parentLink, parentFollowerNumber,
                  usedGeneralizedCoordinates,usedControlInputs,defaultJointOrientation):
@@ -12,9 +12,15 @@ class JointPivotY(Joint):
         return 1
 
     def update(self, inputVector):
-        q = inputVector[self.usedGeneralizedCoordinates]
+        if self.usedGeneralizedCoordinates[0]==0:
+            coords = np.sign(self.usedGeneralizedCoordinates)
+            coords[0]=1
+            q = np.diag(coords)@inputVector[np.abs(self.usedGeneralizedCoordinates)]
+        else:
+            q = np.diag(np.sign(self.usedGeneralizedCoordinates))@inputVector[np.abs(self.usedGeneralizedCoordinates)]
 
-        self.childLink.relativeOrientation = self.defaultJointOrientation@SrdMath.rotationMatrix3Dy(q)
+
+        self.childLink.relativeOrientation = self.defaultJointOrientation@Math.rotationMatrix3Dy(q)
 
         self.forwardKinematicsJointUpdate()
 

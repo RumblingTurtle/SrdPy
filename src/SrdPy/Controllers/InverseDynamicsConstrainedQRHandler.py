@@ -1,15 +1,15 @@
 import numpy as np
 from scipy.linalg import orth
 class InverseDynamicsConstrainedQRHandler:
-    def __init__(self, inverseDynamicsHandler, controlInputHandler, gcModelHandler, constraintsModelHandler, simulationHandler):
+    def __init__(self, inverseDynamicsHandler, controlInputHandler, gcModelHandler, constraintsModelHandler, timeHandler):
         self.inverseDynamicsHandler = inverseDynamicsHandler
         self.controlInputHandler = controlInputHandler
         self.gcModelHandler = gcModelHandler
         self.constraintsModelHandler = constraintsModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
     
     def update(self):
-        t = self.simulationHandler.currentTime
+        t = self.timeHandler.currentTime
         n = self.gcModelHandler.dofConfigurationSpaceRobot
         k = self.constraintsModelHandler.dofConstraint
 

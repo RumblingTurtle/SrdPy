@@ -34,7 +34,7 @@ class CheetahTests(unittest.TestCase):
 
         task = np.hstack([constraint3,CoM])
 
-        description_IK = generateSecondDerivativeJacobians(engine,
+        description_IK,F,dF = generateSecondDerivativeJacobians(engine,
                                                         task=task,
                                                         functionName_Task="g_InverseKinematics_Task",
                                                         functionName_TaskJacobian="g_InverseKinematics_TaskJacobian",

@@ -16,7 +16,7 @@ from SrdPy import plotGeneric
 from copy import deepcopy
 from casadi import *
 from SrdPy import save,get
-from SrdPy.SrdMath import *
+from SrdPy.Math import *
 from SrdPy.TableGenerators import *
 from SrdPy import Chain
 from SrdPy import Profiler
@@ -98,7 +98,7 @@ task = constraint6[:2]
 print("task size is: ", task.size)
 
 
-description_IK = generateSecondDerivativeJacobians(engine,
+description_IK,F,dF = generateSecondDerivativeJacobians(engine,
                                                 task=task,
                                                 functionName_Task="g_InverseKinematics_Task",
                                                 functionName_TaskJacobian="g_InverseKinematics_TaskJacobian",

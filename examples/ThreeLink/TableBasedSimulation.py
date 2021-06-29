@@ -100,7 +100,7 @@ handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
 constraint = engine.linkArray[3].absoluteFollower[0][2]
 
-description_constraints = generateSecondDerivativeJacobians(engine,
+description_constraints,F,dF = generateSecondDerivativeJacobians(engine,
                                                             task=constraint,
                                                             functionName_Task="g_Constraint",
                                                             functionName_TaskJacobian="g_Constraint_Jacobian",
@@ -112,7 +112,7 @@ handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof
 
 task = vertcat(vertcat(engine.q[0], engine.q[1]), constraint)
 
-description_IK = generateSecondDerivativeJacobians(engine,
+description_IK,F,dF = generateSecondDerivativeJacobians(engine,
                                                     task=task,
                                                     functionName_Task="g_InverseKinematics_Task",
                                                     functionName_TaskJacobian="g_InverseKinematics_TaskJacobian",

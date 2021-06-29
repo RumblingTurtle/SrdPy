@@ -1,4 +1,4 @@
-from SrdPy import SrdMath
+from SrdPy import Math
 from SrdPy.LinksAndJoints import Joint
 
 class JointPivotZX(Joint):
@@ -13,8 +13,8 @@ class JointPivotZX(Joint):
 
     def update(self,inputVector):
         q = inputVector[self.usedGeneralizedCoordinates]
-        Tz = SrdMath.rotationMatrix3Dx(q[0])
-        Tx = SrdMath.rotationMatrix3Dy(q[1])
+        Tz = Math.rotationMatrix3Dx(q[0])
+        Tx = Math.rotationMatrix3Dy(q[1])
         
         self.childLink.relativeOrientation =  self.defaultJointOrientation@Tx@Tz
 

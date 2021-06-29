@@ -1,7 +1,7 @@
 from itertools import chain
 from multiprocessing import Pool
 
-import SrdPy.SrdMath
+import SrdPy.Math
 
 
 def matrixDerivative(X,q,v):
@@ -9,9 +9,9 @@ def matrixDerivative(X,q,v):
 
     dXtuples = chain.from_iterable([zip(x,q,v) for x in X])
 
-    if SrdMath.useParallel:
-        with Pool(SrdMath.numberOfWorkers) as pool:
-            dX = pool.starmap(SrdPy.SrdMath.derivative.derivative, iterable=dXtuples)
+    if Math.useParallel:
+        with Pool(Math.numberOfWorkers) as pool:
+            dX = pool.starmap(SrdPy.Math.derivative.derivative, iterable=dXtuples)
 
         dX = [dX[columns*i: columns * (i + 1)] for i in range(rows)]
     else:

@@ -1,4 +1,4 @@
-from SrdPy import SrdMath
+from SrdPy import Math
 from SrdPy.LinksAndJoints import Joint
 import numpy as np
 class JointFloatingBase_XZ_plane(Joint):
@@ -13,9 +13,14 @@ class JointFloatingBase_XZ_plane(Joint):
         return 6 
 
     def update(self,inputVector):
-        q = inputVector[self.usedGeneralizedCoordinates]
+        if self.usedGeneralizedCoordinates[0]==0:
+            coords = np.sign(self.usedGeneralizedCoordinates)
+            coords[0]=1
+            q = np.diag(coords)@inputVector[np.abs(self.usedGeneralizedCoordinates)]
+        else:
+            q = np.diag(np.sign(self.usedGeneralizedCoordinates))@inputVector[np.abs(self.usedGeneralizedCoordinates)]
 
-        self.childLink.relativeOrientation =  SrdMath.rotationMatrix3Dy(q[2])
+        self.childLink.relativeOrientation =  Math.rotationMatrix3Dy(q[2])
         
         self.childLink.absoluteBase = self.parentLink.absoluteFollower[self.parentFollowerNumber]+np.array([q[0],0,q[1]])
         self.childLink.absoluteOrientation = self.parentLink.absoluteOrientation@self.childLink.relativeOrientation

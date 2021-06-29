@@ -1,6 +1,6 @@
 import numpy as np
 import meshcat.transformations as tf
-from SrdPy.SrdMath import rotationTransform
+from SrdPy.Math import rotationTransform
 def getCylinderTransform(p1, p2):
     cylinder_up_vector = [0, 1, 0]
     cylinder_direction = p2 - p1

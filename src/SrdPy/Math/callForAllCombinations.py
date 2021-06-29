@@ -4,8 +4,8 @@ from multiprocessing import Pool
 
 def callForAllCombinations(inputOne, inputTwo, functionReference):
     inputTuples = product(inputOne, inputTwo)
-    if SrdMath.useParallel:
-        with Pool(SrdMath.numberOfWorkers) as pool:
+    if Math.useParallel:
+        with Pool(Math.numberOfWorkers) as pool:
             outputs = pool.starmap(functionReference, iterable=inputTuples)
     else:
         outputs = []

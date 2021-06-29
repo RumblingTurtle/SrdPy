@@ -82,4 +82,4 @@ def generateSecondDerivativeJacobians(symbolicEngine:SymbolicEngine,
     with open(picklePath, 'wb') as f:
         pickle.dump(resultDict, f)
 
-    return resultDict
+    return resultDict,taskJacobian,taskJacobianDerivative

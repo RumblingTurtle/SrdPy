@@ -1,15 +1,15 @@
 class DesiredStateHandler():
-    def __init__(self,controlInputHandler, simulationHandler):
+    def __init__(self,controlInputHandler, timeHandler):
        
         self.dofRobot = controlInputHandler.dofRobot
         self.controlInputHandler = controlInputHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
         self.q = []
         self.v = []
         self.a = []
 
     def update(self):
-        t = self.simulationHandler.currentTime
+        t = self.timeHandler.currentTime
         self.q,self.v,self.a = self.controlInputHandler.getPositionVelocityAcceleration(t)
 
     def getPositionVelocityAcceleration(self,t):

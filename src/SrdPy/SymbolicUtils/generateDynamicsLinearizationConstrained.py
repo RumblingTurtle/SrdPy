@@ -5,8 +5,8 @@ import pickle
 import os
 import sys
 
-def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
-                                    H, c, T,
+def generateDynamicsLinearizationConstrained(symbolicEngine:SymbolicEngine,
+                                    H, c, T,F,dF,
                                     functionName_A,
                                     functionName_B,
                                     functionName_c,
@@ -22,8 +22,8 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
         print("Loaded existing .so at "+path)
         return modelDict
 
-    # H*ddq + c = T*u;        ddq = dv/dt; v = dq/dt;
-    # x = [q; v]
+    # H*ddq + c = T*u        ddq = dv/dt v = dq/dt
+    # x = [q v]
     #
     #
     # f= ddq = inv(H) * (T*u - c)
@@ -51,37 +51,49 @@ def generateDynamicsLinearization(symbolicEngine:SymbolicEngine,
 
     n = symbolicEngine.dof
     m = symbolicEngine.u.shape[0]
+    k = F.size()[0]
 
-    iH = SX.sym('iH', n, n)
+    map = np.hstack([np.eye(n), np.zeros((n, k))])
+    
+    iM = SX.sym('iM', n+k, n+k)
+    
+    M = vertcat(horzcat(H, -F.T),
+        horzcat(F, SX.zeros(k,k)))
 
-    TuPc = T@u-c
-    TCq = jacobian(TuPc, q)
-    TCv = jacobian(TuPc, v)
+    RHS = vertcat(T@u-c, -dF@v)
+    
+    Jq = jacobian(RHS, q)
+    print('Simplifying TCq')
+    Jq = simplify(Jq)
+        
+    Jv = jacobian(RHS, v)
+    print('Simplifying TCv')
+    Jv = simplify(Jv)
+    
+    
+    dfdq = -map@iM@matrixJacobianTimesVector(M, q, iM@RHS) + map@iM@Jq
 
-    dfdq = -iH@matrixJacobianTimesVector(H,q,iH@(T@u-c))+iH@TCq
+    print('Simplifying dfdq')
+    dfdq = simplify(dfdq)
+    
+    dfdv = map@iM @ Jv
+    print('Simplifying dfdv')
+    dfdv = simplify(dfdv)
+    
+    A = vertcat(horzcat(SX.zeros(n, n), SX.eye(n)),
+        horzcat(dfdq,        dfdv))
+     
+    B = vertcat(SX.zeros(n, m),map@iM@vertcat(T,SX.zeros(k, m)))
 
-    dfdv = iH @ TCv
-
-    A1 = horzcat(SX.zeros(n, n),SX.eye(n))
-    A2 = horzcat(dfdq,dfdv)
-
-    A = vertcat(A1,A2)
-    B = vertcat(SX.zeros(n, m),iH@T)
-    #linear_c = horzcat(SX.zeros(n, 1),iH@c - dfdq@q - dfdv@v)
     print('Starting writing function for the '+functionName_A)
     g_linearization_A = Function(functionName_A,
-                                 [symbolicEngine.q,symbolicEngine.v,symbolicEngine.u,iH], [A],
+                                 [symbolicEngine.q,symbolicEngine.v,symbolicEngine.u,iM], [A],
                                  ['q', 'v', 'u', 'iH'], ['A'])
 
     print('Starting writing function for the ' + functionName_B)
     g_linearization_B = Function(functionName_B,
-                                 [symbolicEngine.q,symbolicEngine.v,iH], [B],
+                                 [symbolicEngine.q,symbolicEngine.v,iM], [B],
                                  ['q', 'v', 'iH'], ['B'])
-
-    # print('Starting writing function for the ' + functionName_c)
-    # g_linearization_c = Function(functionName_c,
-    #                                  [symbolicEngine.q, symbolicEngine.v, symbolicEngine.u, iH], [linear_c],
-    #                                  ['q', 'v', 'u', 'iH'], ['c'])
 
     c_function_name = casadi_cCodeFilename+'.c'
     so_function_name = casadi_cCodeFilename+'.so'

@@ -9,6 +9,6 @@ def matrixJacobianTimesVector(M, var, vec):
     T = jacobian(reshape(M,s1[0]*s1[1],1), var)
 
     for i in range(s3):
-        P[i,:] = reshape(T[:,i],s1) @ vec
+        P[:,i] = reshape(T[:,i],s1) @ vec
 
     return P

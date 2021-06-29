@@ -5,16 +5,16 @@ import scipy
 #systems using orthogonal decomposition. In 2010 IEEE international conference on robotics 
 #and automation (pp. 3406-3412). IEEE.
 class InverseDynamicsConstrained_QR():
-    def __init__(self,controlInputHandler,constraintsModel,gcModelHandler,simulationHandler):
+    def __init__(self,controlInputHandler,constraintsModel,gcModelHandler,timeHandler):
         self.controlInputHandler = controlInputHandler
         self.constraintsModel = constraintsModel
         self.gcModelHandler = gcModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
         self.u = []
         self.lambd = []
 
     def update(self):
-        t = self.simulationHandler.currentTime
+        t = self.timeHandler.currentTime
 
         n = self.gcModelHandler.dofConfigurationSpaceRobot
         k = self.constraintsModel.dofConstraint

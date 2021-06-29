@@ -2,16 +2,16 @@ import numpy as np
 from casadi import *
 
 class ConstrainedTaylorSolverHandler():
-    def __init__(self,stateHandler,controllerHandler,gcModelHandler,simulationHandler,constraintsModel):
+    def __init__(self,stateHandler,controllerHandler,gcModelHandler,timeHandler,constraintsModel):
         self.stateHandler = stateHandler
         self.controllerHandler = controllerHandler
         self.gcModelHandler = gcModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
         self.constraintsModel = constraintsModel
 
     def update(self):
-        dt = self.simulationHandler.timeLog[self.simulationHandler.currentIndex + 1]\
-             - self.simulationHandler.timeLog[self.simulationHandler.currentIndex]
+        dt = self.timeHandler.timeLog[self.timeHandler.currentIndex + 1]\
+             - self.timeHandler.timeLog[self.timeHandler.currentIndex]
 
         q,v,a = self.stateHandler.getPositionVelocityAcceleration()
 

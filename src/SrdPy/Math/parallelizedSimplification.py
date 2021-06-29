@@ -6,8 +6,8 @@ def parallelizedSimplification(X):
 
     rows, columns = len(X),len(X[0])
 
-    if SrdMath.useParallel:
-        with Pool(SrdMath.numberOfWorkers) as pool:
+    if Math.useParallel:
+        with Pool(Math.numberOfWorkers) as pool:
             simplifiedX = pool.starmap(simplify, iterable=chain(X))
 
         simplifiedX = [simplifiedX[columns*i: columns * (i + 1)] for i in range(rows)]

@@ -2,7 +2,7 @@ from urdf_parser_py.urdf import URDF
 import urdf_parser_py
 import numpy as np
 from SrdPy.LinksAndJoints import *
-from SrdPy.SrdMath import rpyToRotationMatrix
+from SrdPy.Math import rpyToRotationMatrix
 import os
 import meshcat.geometry as G
 def getInertiaMatrixFromValues(ixx,ixy,ixz,iyy,iyz,izz):

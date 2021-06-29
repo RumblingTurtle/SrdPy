@@ -1,4 +1,4 @@
-from SrdPy import SrdMath
+from SrdPy import Math
 from SrdPy.LinksAndJoints import Joint
 import numpy as np
 class JointFloatingBaseEuler_XYZ(Joint):
@@ -15,9 +15,9 @@ class JointFloatingBaseEuler_XYZ(Joint):
     def update(self,inputVector):
         q = inputVector[self.usedGeneralizedCoordinates]
 
-        Tx = SrdMath.rotationMatrix3Dx(q[0])
-        Ty = SrdMath.rotationMatrix3Dy(q[1])
-        Tz = SrdMath.rotationMatrix3Dz(q[2])
+        Tx = Math.rotationMatrix3Dx(q[0])
+        Ty = Math.rotationMatrix3Dy(q[1])
+        Tz = Math.rotationMatrix3Dz(q[2])
 
         self.childLink.relativeOrientation =  np.array(Tz)@np.array(Ty)@np.array(Tx)
 

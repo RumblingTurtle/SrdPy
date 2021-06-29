@@ -5,20 +5,20 @@ import numpy as np
 
 class ConstrainedLQRController():
     def __init__(self,stateHandler,stateSpaceHandler,controlInputStateSpaceHandler,
-                 linearizedModelHandler,constraintsHandler,simulationHandler,inverseDynamicsHandler,Q,R):
+                 linearizedModelHandler,constraintsHandler,timeHandler,inverseDynamicsHandler,Q,R):
         self.stateHandler = stateHandler
         self.stateSpaceHandler = stateSpaceHandler
         self.controlInputStateSpaceHandler = controlInputStateSpaceHandler
         self.linearizedModelHandler = linearizedModelHandler
         self.constraintsHandler = constraintsHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
         self.inverseDynamicsHandler = inverseDynamicsHandler
         self.Q = Q
         self.R = R
         self.u = []
 
     def update(self):
-        t = self.simulationHandler.currentTime
+        t = self.timeHandler.currentTime
 
         x,dx = self.controlInputStateSpaceHandler.getX_dx(t)
 

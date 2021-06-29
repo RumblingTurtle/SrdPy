@@ -1,13 +1,13 @@
 import numpy as np
 class IDVanillaDesiredTrajectoryHandler():
-    def __init__(self,controlInputHandler,gcModelHandler,simulationHandler):
+    def __init__(self,controlInputHandler,gcModelHandler,timeHandler):
         self.controlInputHandler = controlInputHandler
         self.gcModelHandler = gcModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
         self.u = []
 
     def update(self):
-        t = self.simulationHandler.currentTime
+        t = self.timeHandler.currentTime
 
         q,v,a = self.controlInputHandler.getPositionVelocityAcceleration(t)
 

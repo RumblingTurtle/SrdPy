@@ -1,13 +1,13 @@
 class TaylorSolverHandler():
-    def __init__(self,stateHandler,controllerHandler,gcModelHandler,simulationHandler):
+    def __init__(self,stateHandler,controllerHandler,gcModelHandler,timeHandler):
         self.stateHandler = stateHandler
         self.controllerHandler = controllerHandler
         self.gcModelHandler = gcModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
 
     def update(self):
-        dt = self.simulationHandler.timeLog[self.simulationHandler.currentIndex + 1]\
-             - self.simulationHandler.timeLog[self.simulationHandler.currentIndex]
+        dt = self.timeHandler.timeLog[self.timeHandler.currentIndex + 1]\
+             - self.timeHandler.timeLog[self.timeHandler.currentIndex]
 
         q = self.stateHandler.q
         v = self.stateHandler.v

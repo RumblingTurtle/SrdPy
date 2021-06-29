@@ -1,3 +1,4 @@
+from time import time
 from SrdPy.LinksAndJoints import *
 from SrdPy.Handlers import *
 from SrdPy.InverseKinematics import *
@@ -96,7 +97,7 @@ handlerLinearizedModel = LinearizedModelHandler(description_linearization)
 
 constraint = engine.linkArray[3].absoluteFollower[0][2]
 
-description_constraints = generateSecondDerivativeJacobians(engine,
+description_constraints,F,dF = generateSecondDerivativeJacobians(engine,
                                                             task=constraint,
                                                             functionName_Task="g_Constraint",
                                                             functionName_TaskJacobian="g_Constraint_Jacobian",
@@ -107,7 +108,7 @@ handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof
 
 task = vertcat(vertcat(engine.q[0], engine.q[1]), constraint)
 
-description_IK = generateSecondDerivativeJacobians(engine,
+description_IK,F,dF = generateSecondDerivativeJacobians(engine,
                                                 task=task,
                                                 functionName_Task="g_InverseKinematics_Task",
                                                 functionName_TaskJacobian="g_InverseKinematics_TaskJacobian",
@@ -153,61 +154,60 @@ linearModelEvaluator = LinearModelEvaluatorHandler(handlerGeneralizedCoordinates
 dt = 0.001
 tf = ikSolutionHandler.timeExpiration
 
-simulationHandler = SimulationHandler(np.arange(0, tf, dt))
+timeHandler = TimeHandler(np.arange(0, tf, dt))
 
-desiredStateHandler = DesiredStateHandler(ikSolutionHandler, simulationHandler)
+desiredStateHandler = DesiredStateHandler(ikSolutionHandler, timeHandler)
 
 stateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(stateHandler)
 
 desiredStateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(desiredStateHandler)
 
 #    inverseDynamicsHandler = getIDVanillaDesiredTrajectoryHandler(desiredStateHandler, gcModelEvaluator,
-#                                                                  simulationHandler)
+#                                                                  timeHandler)
 inverseDynamicsHandler = InverseDynamicsConstrained_QR(
                         desiredStateHandler,
                         handlerConstraints,
                         gcModelEvaluator,
-                        simulationHandler)
+                        timeHandler)
 
 computedTorqueController = ComputedTorqueController(stateHandler, desiredStateHandler,
-                                                    gcModelEvaluator, simulationHandler, inverseDynamicsHandler,
+                                                    gcModelEvaluator, timeHandler, inverseDynamicsHandler,
                                                     500 * np.eye(desiredStateHandler.dofRobot),
                                                     100 * np.eye(desiredStateHandler.dofRobot))
 
 
                         
-#    LQRHandler = getLQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
-#                                         simulationHandler,
-#                                         inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
-#                                         np.eye(linearModelEvaluator.dofControl))
-LQRHandler = ConstrainedLQRController(stateHandler,stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,handlerConstraints,
-                                    simulationHandler,
-                                    inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
-                                    np.eye(linearModelEvaluator.dofControl))
+LQRHandler = LQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
+                                         timeHandler,
+                                         inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
+                                         np.eye(linearModelEvaluator.dofControl))
+#LQRHandler = ConstrainedLQRController(stateHandler,stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,handlerConstraints,
+#                                    timeHandler,
+#                                    inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
+#                                    np.eye(linearModelEvaluator.dofControl))
 
 mainController = LQRHandler
 
 linearModelEvaluator.controllerHandler = inverseDynamicsHandler
 
-taylorSolverHandler = ConstrainedTaylorSolverHandler(stateHandler, mainController, gcModelEvaluator, simulationHandler,handlerConstraints)
+taylorSolverHandler = ConstrainedTaylorSolverHandler(stateHandler, mainController, gcModelEvaluator, timeHandler,handlerConstraints)
 
-stateHandlerLogger = StateLoggerHandler(stateHandler, simulationHandler)
+stateHandlerLogger = StateLoggerHandler(stateHandler, timeHandler)
 
-tickLogger = ProgressDisplayHandler(simulationHandler)
+tickLogger = ProgressDisplayHandler(timeHandler)
 
 preprocessingHandlers = [desiredStateHandler, stateSpaceHandler, desiredStateSpaceHandler, gcModelEvaluator]
 controllerHandlers = [inverseDynamicsHandler, linearModelEvaluator, LQRHandler]
 solverHandlers = [taylorSolverHandler]
 loggerHandlers = [stateHandlerLogger, tickLogger]
 
-simulationHandler.preprocessingHandlersArray = preprocessingHandlers
-simulationHandler.controllerArray = controllerHandlers
-simulationHandler.solverArray = solverHandlers
-simulationHandler.loggerArray = loggerHandlers
+handlerUpdater = HandlerUpdater()
+handlerUpdater.handlers = preprocessingHandlers+controllerHandlers+solverHandlers+loggerHandlers+[timeHandler]
 
-simulationHandler.simulate()
+for i in range(timeHandler.timeLog.shape[0]):
+    handlerUpdater.update()
 
-plotGeneric(simulationHandler.timeLog[:-1], stateHandlerLogger.q, figureTitle="Q", ylabel="q")
-plotGeneric(simulationHandler.timeLog[:-1], stateHandlerLogger.v, figureTitle="V", ylabel="v")
+plotGeneric(timeHandler.timeLog, stateHandlerLogger.q, figureTitle="Q", ylabel="q")
+plotGeneric(timeHandler.timeLog, stateHandlerLogger.v, figureTitle="V", ylabel="v")
 vis = Visualizer()
 vis.animate(blank_chain,stateHandlerLogger.q,framerate=0.1)

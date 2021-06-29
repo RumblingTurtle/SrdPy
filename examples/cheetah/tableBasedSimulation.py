@@ -96,7 +96,7 @@ constraint5 = engine.links["FR_thigh"].absoluteFollower[0]
 constraint = np.hstack([[constraint1[0],constraint1[2]], constraint2,constraint3])
 print("constraint size is: ", constraint.size)
 
-description_constraints = generateSecondDerivativeJacobians(engine,
+description_constraints,F,dF = generateSecondDerivativeJacobians(engine,
                                                             task=constraint,
                                                             functionName_Task="g_Constraint",
                                                             functionName_TaskJacobian="g_Constraint_Jacobian",
@@ -112,7 +112,7 @@ task = np.hstack([constraint5,constraint4,constraint])
 print("task size is: ", task.size)
 
 
-description_IK = generateSecondDerivativeJacobians(engine,
+description_IK,F,dF = generateSecondDerivativeJacobians(engine,
                                                 task=task,
                                                 functionName_Task="g_InverseKinematics_Task",
                                                 functionName_TaskJacobian="g_InverseKinematics_TaskJacobian",

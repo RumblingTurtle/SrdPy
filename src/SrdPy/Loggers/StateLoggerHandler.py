@@ -1,16 +1,16 @@
 import numpy as np
 from casadi import *
 class StateLoggerHandler():
-    def __init__(self,stateHandler,simulationHandler,logAcceleration = True):
+    def __init__(self,stateHandler,timeHandler,logAcceleration = True):
         self.stateHandler = stateHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
         self.logAcceleration = logAcceleration
         self.q = []
         self.v = []
         self.a = []
 
     def update(self):
-        i = self.simulationHandler.currentIndex
+        i = self.timeHandler.currentIndex
 
         self.q.append(np.array(DM(self.stateHandler.q)).T[0])
         self.v.append(np.array(DM(self.stateHandler.v)).T[0])

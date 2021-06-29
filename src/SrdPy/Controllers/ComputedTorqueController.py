@@ -1,19 +1,19 @@
 import numpy as np
 
 class ComputedTorqueController():
-    def __init__(self, stateHandler, controlInputHandler, gcModelHandler, simulationHandler, IKHandler,kP,kD):
+    def __init__(self, stateHandler, controlInputHandler, gcModelHandler, timeHandler, IKHandler,kP,kD):
         self.u = []
         self.stateHandler = stateHandler
         self.IKHandler = IKHandler
         self.controlInputHandler = controlInputHandler
         self.gcModelHandler = gcModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
         self.kP = kP
         self.kD = kD
 
 
     def update(self):
-        t = self.simulationHandler.currentTime
+        t = self.timeHandler.currentTime
 
         q,v,a = self.controlInputHandler.getPositionVelocityAcceleration(t)
 

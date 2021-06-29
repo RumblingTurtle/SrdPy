@@ -4,18 +4,18 @@ import numpy as np
 
 class LQRControllerHandler():
     def __init__(self,stateSpaceHandler,controlInputStateSpaceHandler,
-                 linearizedModelHandler,simulationHandler,IKHandler,Q,R):
+                 linearizedModelHandler,timeHandler,IKHandler,Q,R):
         self.stateSpaceHandler = stateSpaceHandler
         self.controlInputStateSpaceHandler = controlInputStateSpaceHandler
         self.linearizedModelHandler = linearizedModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
         self.IKHandler = IKHandler
         self.Q = Q
         self.R = R
         self.u = []
 
     def update(self):
-        t = self.simulationHandler.currentTime
+        t = self.timeHandler.currentTime
 
         x,dx = self.controlInputStateSpaceHandler.getX_dx(t)
 

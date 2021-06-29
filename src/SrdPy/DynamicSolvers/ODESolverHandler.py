@@ -1,11 +1,11 @@
 import numpy as np
 import scipy
 class ODESolverHandler():
-    def __init__(self,stateHandler,controllerHandler,gcModelHandler,simulationHandler):
+    def __init__(self,stateHandler,controllerHandler,gcModelHandler,timeHandler):
         self.stateHandler = stateHandler
         self.controllerHandler = controllerHandler
         self.gcModelHandler = gcModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
 
     def odeFunc(self, z):
         n = self.gcModelHandler.dofConfigurationSpaceRobot
@@ -24,8 +24,8 @@ class ODESolverHandler():
     def update(self):
         n = self.gcModelHandler.dof_configuration_space_robot
 
-        dt = self.simulationHandler.timeLog[self.simulationHandler.currentIndex + 1]\
-             - self.simulationHandler.timeLog[self.simulationHandler.currentIndex]
+        dt = self.timeHandler.timeLog[self.timeHandler.currentIndex + 1]\
+             - self.timeHandler.timeLog[self.timeHandler.currentIndex]
 
         q0 = self.stateHandler.q
         v0 = self.stateHandler.v

@@ -76,7 +76,7 @@ constraint5 = engine.links["FR_thigh"].absoluteFollower[0]
 constraint = np.hstack([[constraint1[0],constraint1[2]], constraint2,constraint3])
 print("constraint size is: ", constraint.size)
 
-description_constraints = generateSecondDerivativeJacobians(engine,
+description_constraints,F,dF = generateSecondDerivativeJacobians(engine,
                                                             task=constraint,
                                                             functionName_Task="g_Constraint",
                                                             functionName_TaskJacobian="g_Constraint_Jacobian",
@@ -92,7 +92,7 @@ task = np.hstack([constraint5,constraint4,constraint])
 print("task size is: ", task.size)
 
 
-description_IK = generateSecondDerivativeJacobians(engine,
+description_IK,F,dF = generateSecondDerivativeJacobians(engine,
                                                 task=task,
                                                 functionName_Task="g_InverseKinematics_Task",
                                                 functionName_TaskJacobian="g_InverseKinematics_TaskJacobian",
@@ -180,9 +180,9 @@ n = handlerGeneralizedCoordinatesModel.dofConfigurationSpaceRobot
 dt = 0.001
 tf = ikSolutionHandler.timeExpiration
 
-simulationHandler = SimulationHandler(np.arange(0, tf, dt),True,timeStep)
+timeHandler = TimeHandler(np.arange(0, tf, dt),True,timeStep)
 
-desiredStateHandler = DesiredStateHandler(ikSolutionHandler, simulationHandler)
+desiredStateHandler = DesiredStateHandler(ikSolutionHandler, timeHandler)
 
 stateSpaceHandler = StateConverterGenCoord2StateSpaceHandler(stateHandler)
 
@@ -192,12 +192,12 @@ inverseDynamicsHandler = InverseDynamicsConstrained_QR(
                         desiredStateHandler,
                         handlerConstraints,
                         gcModelEvaluator,
-                        simulationHandler)
+                        timeHandler)
 
 linearModelEvaluator = LinearModelEvaluatorHandler(handlerGeneralizedCoordinatesModel, handlerLinearizedModel,
                                                     stateHandler, inverseDynamicsHandler, False)
 computedTorqueController = LQRControllerHandler(stateSpaceHandler, desiredStateSpaceHandler, linearModelEvaluator,
-                                         simulationHandler,
+                                         timeHandler,
                                          inverseDynamicsHandler, 10 * np.eye(linearModelEvaluator.dofRobotStateSpace),
                                          np.eye(linearModelEvaluator.dofControl))
 
@@ -205,12 +205,12 @@ computedTorqueController = LQRControllerHandler(stateSpaceHandler, desiredStateS
 preprocessingHandlers = [desiredStateHandler, stateSpaceHandler, desiredStateSpaceHandler, gcModelEvaluator]
 controllerHandlers = [inverseDynamicsHandler,linearModelEvaluator,computedTorqueController]
 
-simulationHandler.preprocessingHandlersArray = preprocessingHandlers
-simulationHandler.controllerArray = controllerHandlers
-
+handlerUpdater = HandlerUpdater()
+handlerUpdater.handlers = preprocessingHandlers+controllerHandlers
 
 while(1):
-    simulationHandler.step()
+    timeHandler.update()
+    handlerUpdater.update()
     u = np.array(computedTorqueController.u).T.tolist()[0]
 
     for j in range (len(u[6:])):

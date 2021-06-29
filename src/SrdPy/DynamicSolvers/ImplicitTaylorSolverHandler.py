@@ -2,17 +2,17 @@ from casadi import *
 from scipy.optimize import least_squares
 
 class ImplicitTaylorSolverHandler():
-    def __init__(self,stateHandler,controllerHandler,gcModelHandler,simulationHandler):
+    def __init__(self,stateHandler,controllerHandler,gcModelHandler,timeHandler):
         self.stateHandler = stateHandler
         self.controllerHandler = controllerHandler
         self.gcModelHandler = gcModelHandler
-        self.simulationHandler = simulationHandler
+        self.timeHandler = timeHandler
 
     def update(self):
         n = self.gcModelHandler.dofConfigurationSpaceRobot
 
-        dt = self.simulationHandler.timeLog[self.simulationHandler.currentIndex + 1]\
-             - self.simulationHandler.timeLog[self.simulationHandler.currentIndex]
+        dt = self.timeHandler.timeLog[self.timeHandler.currentIndex + 1]\
+             - self.timeHandler.timeLog[self.timeHandler.currentIndex]
 
         q0 = DM(self.stateHandler.q)
         v0 = DM(self.stateHandler.v)
