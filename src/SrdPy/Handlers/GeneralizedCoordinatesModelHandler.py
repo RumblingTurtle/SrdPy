@@ -34,3 +34,15 @@ class GeneralizedCoordinatesModelHandler():
 
     def getControlMap(self, q):
         return np.array(self.getControlMapHandler(DM(q)))
+
+        
+    def getFirstOrderSystem_qv(self, x, u):
+        q = x[:self.dofConfigurationSpaceRobot]
+        v = x[self.dofConfigurationSpaceRobot+1:]
+
+        iH = self.getJointSpaceInertiaMatrixInverse(q)
+        c = self.getBiasVector(q, v)
+        T = self.getControlMap(q)
+
+        dx = vertcat(v,iH @ (T@u - c))
+        return dx
