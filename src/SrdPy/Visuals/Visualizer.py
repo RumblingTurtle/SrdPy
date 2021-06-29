@@ -12,15 +12,20 @@ class Visualizer:
         pass
 
     def show(self, chain,showMeshes=False):
-        if 'google.colab' in sys.modules:
-            server_args = ['--ngrok_http_tunnel']
-            # Start a single meshcat server instance to use for the remainder of this notebook.
-            from meshcat.servers.zmqserver import start_zmq_server_as_subprocess
-            proc, zmq_url, web_url = start_zmq_server_as_subprocess(server_args=server_args)
-            vis = meshcat.Visualizer(zmq_url=zmq_url)
-        else:
-            vis = meshcat.Visualizer().open()
+        if self.vis == None:
+            if 'google.colab' in sys.modules:
+                server_args = ['--ngrok_http_tunnel']
+                # Start a single meshcat server instance to use for the remainder of this notebook.
+                from meshcat.servers.zmqserver import start_zmq_server_as_subprocess
+                proc, zmq_url, web_url = start_zmq_server_as_subprocess(server_args=server_args)
+                vis = meshcat.Visualizer(zmq_url=zmq_url)
+            else:
+                vis = meshcat.Visualizer().open()
 
+            self.vis = vis
+        else:
+            vis = self.vis
+            
         if showMeshes:
             for i,link in enumerate(chain.linkArray):
                 if link.meshObj == None:
@@ -60,14 +65,20 @@ class Visualizer:
             
 
     def animate(self,chain,states,framerate = 5,showMeshes=False):
-        if 'google.colab' in sys.modules:
-            server_args = ['--ngrok_http_tunnel']
-            # Start a single meshcat server instance to use for the remainder of this notebook.
-            from meshcat.servers.zmqserver import start_zmq_server_as_subprocess
-            proc, zmq_url, web_url = start_zmq_server_as_subprocess(server_args=server_args)
-            vis = meshcat.Visualizer(zmq_url=zmq_url)
+
+        if self.vis == None:
+            if 'google.colab' in sys.modules:
+                server_args = ['--ngrok_http_tunnel']
+                # Start a single meshcat server instance to use for the remainder of this notebook.
+                from meshcat.servers.zmqserver import start_zmq_server_as_subprocess
+                proc, zmq_url, web_url = start_zmq_server_as_subprocess(server_args=server_args)
+                vis = meshcat.Visualizer(zmq_url=zmq_url)
+            else:
+                vis = meshcat.Visualizer().open()
+
+            self.vis = vis
         else:
-            vis = meshcat.Visualizer().open()
+            vis = self.vis
 
         anim = Animation()
 
