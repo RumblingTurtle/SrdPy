@@ -9,7 +9,7 @@ import urdf_parser_py.urdf as primitives
 
 class Visualizer:
     def __init__(self):
-        pass
+        self.vis = None
 
     def show(self, chain,showMeshes=False):
         if self.vis == None:
