@@ -6,3 +6,4 @@ from SrdPy.Controllers.InverseDynamicsConstrained_QR import InverseDynamicsConst
 from SrdPy.Controllers.ConstrainedLQRController import ConstrainedLQRController
 from SrdPy.Controllers.InverseDynamicsConstrainedQRHandler import InverseDynamicsConstrainedQRHandler
 from SrdPy.Controllers.LTI_CLQE import LTI_CLQE
+from .Zonotopes import *
