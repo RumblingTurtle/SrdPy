@@ -12,9 +12,9 @@ zonotope_order=250, cost_weights_G=[1111],cost_weights_T=1,cost_weights_b=1,cycl
     G,T = [],[]
 
     for i in range(count):
-        G+=[cp.Variable((size_x, size_z+size_x))]
-        T+=[cp.Variable((size_u, size_z+size_x))]
-    G+=[cp.Variable((size_x, size_z+size_x))]
+        G+=[cp.Variable((size_x, size_z+size_x),name="G_{}".format(i))]
+        T+=[cp.Variable((size_u, size_z+size_x),name="T_{}".format(i))]
+    G+=[cp.Variable((size_x, size_z+size_x),name="G_N")]
 
     bounding_box_margin = cp.Variable((size_x, count),nonneg=True)
 
@@ -23,7 +23,7 @@ zonotope_order=250, cost_weights_G=[1111],cost_weights_T=1,cost_weights_b=1,cycl
     cost = cost_weights_b * cp.norm(cp.vec(bounding_box_margin), cost_norm)
 
     if type(cost_weights_T)==int:
-        cost = cost + cost_weights_T * cp.norm(cp.hstack(T), cost_norm)
+        cost = cost + cost_weights_T * cp.norm(cp.vec(cp.hstack(T)), cost_norm)
     else:
         for i in range(size_u):
             cost = cost + cost_weights_T[i] * cp.norm(T[i], cost_norm)
@@ -31,7 +31,7 @@ zonotope_order=250, cost_weights_G=[1111],cost_weights_T=1,cost_weights_b=1,cycl
 
 
     if type(cost_weights_G)==int:
-        cost = cost + cost_weights_G * cp.norm(cp.hstack(G), cost_norm)
+        cost = cost + cost_weights_G * cp.norm(cp.vec(cp.hstack(G)), cost_norm)
     else:
         for i in range(size_x):
             cost = cost + cost_weights_G[i] * cp.norm(G[i], cost_norm)
@@ -56,17 +56,22 @@ zonotope_order=250, cost_weights_G=[1111],cost_weights_T=1,cost_weights_b=1,cycl
         for j in range(size_x):
             constraints+=[cp.norm(F_2[j],1) <= bounding_box_margin[j,i]]
         
-        constraints+=[G[i] == cp.hstack((F_1,cp.diag(bounding_box_margin[:,i]), W_matrix))]
+        constraints+=[G[i+1] == cp.hstack((F_1,cp.diag(bounding_box_margin[:,i]), W_matrix))]
 
     prob = cp.Problem(cp.Minimize(cost),constraints)
-    prob.solve()
+    prob.solve(verbose=True)
     if prob.status not in ["infeasible", "unbounded"]:
         print("Optimal value: %s" % prob.value)
         K_table = np.zeros([size_u, size_x, count])
+        res_G = []
+        res_T = []
+        for variable in prob.variables():
+            if variable.name()[0]=="G":
+                res_G.append(variable.value)
+            if variable.name()[0]=="T":
+                res_T.append(variable.value)
         for i in range(count):
-            K_table[:,:,i] = T[:, :, i] @ np.linalg.pinv(G[:,:, i])
+            K_table[:,:,i] = res_T[i] @ np.linalg.pinv(res_G[i])
         
 
-        G_table = np.full(G)
-        T_table = np.full(T)
-        return K_table, G_table, T_table
+        return K_table, np.stack(res_G), np.stack(res_T)

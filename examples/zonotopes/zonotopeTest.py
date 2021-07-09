@@ -12,7 +12,7 @@ from SrdPy import SymbolicEngine
 from SrdPy import plotGeneric
 from copy import deepcopy
 from casadi import *
-
+import matplotlib.pyplot as plt
 from SrdPy import Chain
 import numpy as np
 
@@ -136,8 +136,9 @@ timeHandler = TimeHandler()
 desiredStateHandler = DesiredStateHandler(ikSolutionHandler,timeHandler)
 
 tf = ikSolutionHandler.timeExpiration
-td = 0.1
-timeHandler = TimeHandler(np.arange(0, tf, td))
+tf = 0.1
+timeTable = np.arange(0, tf, 0.01)
+timeHandler = TimeHandler(timeTable)
 
 desiredStateHandler = DesiredStateHandler(ikSolutionHandler, timeHandler)
 
@@ -156,37 +157,11 @@ BB=np.stack((B_table,B_table_p), axis=3)
 
 
 K_table, G_table, T_table = explicitZonotopeTable(AA,BB,zonotope_order=10,cost_weights_G=1,cost_weights_T=1,cost_weights_b=1)
-'''
-dof = length(InitialPosition) Count = size(G_table, 3)
-for j = 1:dof
-    figure('Color', 'w')
-    for i = 1:Count
-        Color = [0.8, 0.2, 0.2] * i/Count + [0.2, 0.2, 0.8] * (Count - i)/Count
-        SRD_draw_zonotope([G_table(j, :, i) G_table(j+dof, :, i)], zeros(2, 1), 'FaceColor', Color, 'FaceAlpha', 0.2)
-    end
-end
 
+dof = initialPosition.shape[0]
+Count = G_table.shape[0]
 
-
-
-# #
-##############################
-[AA_table, cc_table] = SRD_CloseLoop_GenerateTable(A_table, B_table, c_table, K_table, x_table, u_table)
-
-# #
-##############################
-ode_fnc_handle = SRD_get_ode_fnc_from_ClosedLoopLinearSystem(AA_table, cc_table, time_table)
-
-
-
-x0 = [InitialPosition zeros(size(InitialPosition))]
-
-[time_table_0, solution_tape] = ode45(ode_fnc_handle, [0, tf], x0)
-
-figure('Color', 'w')
-plot(time_table_0, solution_tape, 'LineWidth', 3) hold on
-plot(time_table', x_table', '--', 'LineWidth', 1)
-
-# figure('Color', 'w')
-# plot(time_table, cc_table, 'LineWidth', 3) hold on
-'''
+for j in range(dof):
+    for i in range(Count):
+        drawZonotope(np.vstack([G_table[i, j, :],G_table[i,j+dof, :]]), np.zeros((2, 1)))
+plt.show()

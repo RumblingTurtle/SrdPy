@@ -211,3 +211,5 @@ plotGeneric(timeHandler.timeLog, stateHandlerLogger.q, figureTitle="Q", ylabel="
 plotGeneric(timeHandler.timeLog, stateHandlerLogger.v, figureTitle="V", ylabel="v")
 vis = Visualizer()
 vis.animate(blank_chain,stateHandlerLogger.q,framerate=0.1)
+vis.animate(blank_chain,stateHandlerLogger.q,framerate=0.1)
+input()
