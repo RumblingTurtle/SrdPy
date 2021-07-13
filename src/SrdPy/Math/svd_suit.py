@@ -20,8 +20,8 @@ def svd_suit(M,tol=None):
     suit.M = M
 
     U, sdiag, VH = numpy.linalg.svd(DM(M))
-    S = numpy.zeros(M.size())
-    numpy.fill_diagonal(S, sdiag)
+    S = np.zeros(M.shape)
+    np.fill_diagonal(S, sdiag)
     V = VH.T.conj()
     suit.U = U
     suit.S = S

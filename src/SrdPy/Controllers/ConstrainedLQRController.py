@@ -31,12 +31,12 @@ class ConstrainedLQRController():
         F = self.constraintsHandler.getJacobian(DM(q))
         dF = self.constraintsHandler.getJacobianDerivative(DM(q),DM(v))
         
-        G = horzcat(F,dF)
+        G = vertcat(horzcat(SX.zeros(F.size()),F),horzcat(F,dF))
 
-        N = scipy.linalg.null_space(G)
+        N = scipy.linalg.null_space(DM(G))
 
         An = N.T@A@N
-        Bn = N.T@B.T
+        Bn = N.T@B
         Qn = N.T@self.Q@N
 
         Kn, S, CLP = lqr(An, Bn, Qn, self.R)

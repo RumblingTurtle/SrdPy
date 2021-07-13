@@ -1,2 +1,3 @@
 from SrdPy.Loggers.ProgressDisplayHandler import ProgressDisplayHandler
 from SrdPy.Loggers.StateLoggerHandler import StateLoggerHandler
+from .SimulationTickDisplay import SimulationTickDisplay

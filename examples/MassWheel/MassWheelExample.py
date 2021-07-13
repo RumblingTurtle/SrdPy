@@ -16,26 +16,33 @@ from casadi import *
 from SrdPy import Chain
 import numpy as np
 
+l1 = 0.3
+I1 = 0.00464
+I2 = 0.0017
+m1 = 0.126 + 0.4
+m2 = 0.0
+lc1 = (0.126*0.15 + 0.4*l1)/m1
+
 groundLink = GroundLink()
 
 link1 = Link(name="Link1", order=1,
-                inertia=np.diag([0, 0.003792, 0]), mass=0.67,
-                relativeBase=[0, 0, 0], relativeFollower=[[0, 0, -0.38]], relativeCoM=[0, 0, -0.3134])
+                inertia=np.diag([0, I1, 0]), mass=m1,
+                relativeBase=[0, 0, 0], relativeFollower=[[0, 0, -l1]], relativeCoM=[0, 0, -lc1])
 
 link2 = Link(name="Link2", order=2,
-                inertia=np.diag([0, 0.0017, 0]), mass=0,
+                inertia=np.diag([0, I2, 0]), mass=m2,
                 relativeBase=[0, 0, 0], relativeFollower=[[0, 0, 0.5]], relativeCoM=[0, 0, 0])
 
-joint1to2 = JointFloatingBase_XZ_plane(name="GroundTo1", childLink=link1, parentLink=groundLink, parentFollowerNumber=0,
-                        usedGeneralizedCoordinates=np.array([0,1,-2]), usedControlInputs=[],
+joint1to2 = JointPivotY(name="GroundTo1", childLink=link1, parentLink=groundLink, parentFollowerNumber=0,
+                        usedGeneralizedCoordinates=np.array([-0]), usedControlInputs=[],
                         defaultJointOrientation=np.eye(3))
 
 joint1to2 = JointPivotY(name="1To2", childLink=link2, parentLink=link1, parentFollowerNumber=0,
-                        usedGeneralizedCoordinates=np.array([3]), usedControlInputs=[0],
+                        usedGeneralizedCoordinates=np.array([-1]), usedControlInputs=[0],
                         defaultJointOrientation=np.eye(3))
 
 
-initialPosition = np.array([0, 0, pi, -np.pi/2])
+initialPosition = np.array([0.2,-np.pi/2])
 linkArray = [groundLink, link1, link2]
 
 chain = Chain(linkArray)
@@ -57,14 +64,17 @@ H = deriveJSIM(engine)
 iN, dH = deriveGeneralizedInertialForces_dH(engine, H)
 g = deriveGeneralizedGravitationalForces(engine)
 
+kd1 = 0.0011
+kd2 = 0.0015
+km = 0.062
 
-d = np.array([0,0,0,0.00015])
-T = np.array([0,0,0,0.061])
-
+d = engine.v*np.array([kd1,kd2])
+T = DM(np.array([0,km]))
+c = simplify(iN + g + d)
 
 description_gen_coord_model = generateDynamicsGeneralizedCoordinatesModel(engine,
                                                                         H=H,
-                                                                        c=(iN + g + d),
+                                                                        c=c,
                                                                         T=T,
                                                                         functionName_H="g_dynamics_H",
                                                                         functionName_c="g_dynamics_c",
@@ -91,7 +101,7 @@ handlerConstraints = ConstraintsModelHandler(description_constraints, engine.dof
 
 description_linearization = generateDynamicsLinearizationConstrained(engine,
                                                         H=H,
-                                                        c=(iN + g + d),
+                                                        c=c,
                                                         T=T,
                                                         F=F,
                                                         dF=dF,
@@ -102,6 +112,19 @@ description_linearization = generateDynamicsLinearizationConstrained(engine,
                                                         path="./MassWheel/Linearization")
                                                         
 handlerLinearizedModel = LinearizedModelHandler(description_linearization)
+
+task = np.array([engine.q[0],engine.q[1]])
+desc,_,_ = generateSecondDerivativeJacobians(engine,
+                                                            task=task,
+                                                            functionName_Task="g_InverseKinematics_task",
+                                                            functionName_TaskJacobian="g_InverseKinematics_taskJacobian",
+                                                            functionName_TaskJacobianDerivative="g_InverseKinematics_taskJacobian_derivative",
+                                                            casadi_cCodeFilename="g_InverseKinematics",
+                                                            path="./MassWheel/InverseKinematics",
+                                                            recalculate=False,
+                                                            useJIT=False)
+
+handlerConstraints = IKModelHandler(desc, engine.dof, 2)
 
 save(handlerGeneralizedCoordinatesModel,"handlerGeneralizedCoordinatesModel")
 save(handlerLinearizedModel,"handlerLinearizedModel")

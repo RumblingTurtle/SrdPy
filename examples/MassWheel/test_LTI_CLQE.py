@@ -3,7 +3,7 @@ from casadi import *
 import numpy as np
 from SrdPy import get
 from SrdPy.Controllers import LTI_CLQE
-from SrdPy.Controllers.LTI_CLQE import LTI_System
+from SrdPy.Controllers.Observers.LTI_CLQE import LTI_System
 tol = 10**(-5)
 
 # [0, 0, phi_1, phi_2]
