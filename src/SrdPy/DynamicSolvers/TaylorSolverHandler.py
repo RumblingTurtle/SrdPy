@@ -6,8 +6,7 @@ class TaylorSolverHandler():
         self.timeHandler = timeHandler
 
     def update(self):
-        dt = self.timeHandler.timeLog[self.timeHandler.currentIndex + 1]\
-             - self.timeHandler.timeLog[self.timeHandler.currentIndex]
+        dt = self.timeHandler.dt
 
         q = self.stateHandler.q
         v = self.stateHandler.v

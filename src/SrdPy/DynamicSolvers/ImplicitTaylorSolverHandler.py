@@ -11,8 +11,7 @@ class ImplicitTaylorSolverHandler():
     def update(self):
         n = self.gcModelHandler.dofConfigurationSpaceRobot
 
-        dt = self.timeHandler.timeLog[self.timeHandler.currentIndex + 1]\
-             - self.timeHandler.timeLog[self.timeHandler.currentIndex]
+        dt = self.timeHandler.dt
 
         q0 = DM(self.stateHandler.q)
         v0 = DM(self.stateHandler.v)

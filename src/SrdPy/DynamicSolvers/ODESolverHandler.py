@@ -24,8 +24,7 @@ class ODESolverHandler():
     def update(self):
         n = self.gcModelHandler.dof_configuration_space_robot
 
-        dt = self.timeHandler.timeLog[self.timeHandler.currentIndex + 1]\
-             - self.timeHandler.timeLog[self.timeHandler.currentIndex]
+        dt = self.timeHandler.dt
 
         q0 = self.stateHandler.q
         v0 = self.stateHandler.v
